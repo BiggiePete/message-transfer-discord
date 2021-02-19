@@ -29,24 +29,14 @@ class Loops(commands.Cog):
         self.get_status.start()
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
         if message.author == self.bot.user:
             return
 
         if message.content.startswith('ping'):
             await message.channel.send('pong!')
 
-    # @commands.command()
-    # async def hello(self, ctx, *, member: discord.Member = None):
-    #     """Says hello"""
-    #     member = member or ctx.author
-    #     if self._last_member is None or self._last_member.id != member.id:
-    #         await ctx.send('Hello {0.name}~'.format(member))
-    #     else:
-    #         await ctx.send('Hello {0.name}... This feels familiar.'.format(member))
-    #     self._last_member = member
-
-    @tasks.loop(seconds=5.0)
+    @tasks.loop(minutes=1)
     async def get_status(self):
         """update status channel names"""
 
@@ -102,5 +92,5 @@ class Loops(commands.Cog):
             print('Error with request:', e)
 
 
-def setup(bot):
+def setup(bot: commands.Bot):
     bot.add_cog(Loops(bot))

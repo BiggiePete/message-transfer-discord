@@ -2,7 +2,8 @@ import os
 import discord
 from discord.ext import commands
 
-bot = commands.Bot(command_prefix=f'<@!{811718334583930970}> ')
+# bot = commands.Bot(command_prefix=f'<@!{811718334583930970}> ')
+bot = commands.Bot(command_prefix='.')
 
 
 @bot.event
