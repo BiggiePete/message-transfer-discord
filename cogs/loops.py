@@ -15,10 +15,10 @@ class Loops(commands.Cog):
         self.total_users_channel = bot.get_channel(804825997161005146)
 
         # statuses
-        self.status = 0
-        self.player_count = 0
-        self.queue_count = 0
-        self.total_users = 0
+        self.status = None
+        self.player_count = None
+        self.queue_count = None
+        self.total_users = None
 
         self.status_urls = [
             'http://68.59.13.90:30120/players.json',
