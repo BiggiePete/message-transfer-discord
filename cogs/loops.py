@@ -86,8 +86,8 @@ class Loops(commands.Cog):
             async with session.get(url, timeout=2) as response:
                 data = await response.read()
                 return json.loads(data.decode())
-        except asyncio.TimeoutError as e:
-            print('Request timed out:', e)
+        except asyncio.TimeoutError:
+            print('Server offline')
         except Exception as e:
             print('Error with request:', e)
 
