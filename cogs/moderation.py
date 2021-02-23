@@ -1,6 +1,5 @@
 from typing import Optional
 from discord.ext import commands
-from discord.utils import get
 
 
 class Moderation(commands.Cog):
