@@ -1,12 +1,18 @@
 from typing import Optional
 from discord.ext import commands
+from discord.utils import get
 
 
 class Moderation(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.black_list_clear_channel_ids = [
-            805217207305895987
+        self.guild = bot.get_guild(803002510864023593)
+
+        self.blacklist_categories = [
+            805217167847063573, # Register
+            804825493856976906, # Information
+            804829689033785344, # Game Logs
+            812408184719147009  # Discord Logs
         ]
 
     @commands.command()
@@ -14,7 +20,7 @@ class Moderation(commands.Cog):
     async def purge(self, ctx: commands.Context, n: Optional[int]=1):
         """Purge chat messages"""
 
-        if ctx.channel.id not in self.black_list_clear_channel_ids:
+        if ctx.channel.category_id not in self.blacklist_categories:
             await ctx.channel.purge(limit = n+1)
 
     @purge.error
