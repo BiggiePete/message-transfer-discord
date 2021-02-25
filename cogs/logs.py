@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 import discord
 from discord.ext import commands
 
@@ -9,7 +10,7 @@ class Logs(commands.Cog):
         self.log_channel = bot.get_channel(812408474511474709)
 
     @staticmethod
-    def make_embed(title: str, author: str, channel: str, _id: tuple, message: str):
+    def make_embed(title: str, author: str, channel: str, _id: tuple, message: str, attachment: Optional[str]=None):
         """Make embed template used by different events"""
 
         time = datetime.datetime.utcnow() - datetime.timedelta(hours=5)
@@ -22,6 +23,9 @@ class Logs(commands.Cog):
         embed.add_field(name='Author', value=author, inline=True)
         embed.add_field(name='Channel', value=channel, inline=True)
         embed.add_field(name=_id[0], value=_id[1], inline=True)
+
+        if attachment:
+            embed.set_image(url=attachment)
 
         # chunk message if longer than 1024
         for i, chunk in  enumerate(range(0, len(message), 1024)):
@@ -63,36 +67,38 @@ class Logs(commands.Cog):
 
             embed.add_field(name=f'Embed Error', value='Embed > 6000', inline=False)
 
-        return embed
-
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         """Log deleted messages to log channel"""
 
-
         if payload.cached_message:
             message = ''
+            attachment_url = None
 
             if payload.cached_message.content:
-                message += f'message: {payload.cached_message.content}\n\n'
+                message += f'**message:** {payload.cached_message.content}\n'
 
             if payload.cached_message.embeds:
                 for embed in payload.cached_message.embeds:
-                    message += f'embed: {str(embed.to_dict())}\n'
+                    message += f'**embed:** {str(embed.to_dict())}\n'
                 message += '\n'
 
             if payload.cached_message.attachments:
-                pass
+                message += f'**attachment:**'
+                attachment_url = payload.cached_message.attachments[0].proxy_url
+                message += '\n'
 
             if payload.cached_message.stickers:
-                pass
+                # no way to test stickers without nitro member
+                print(payload.cached_message.stickers)
 
             embed = self.make_embed(
                 title='Deleted Message',
                 author=payload.cached_message.author.mention,
                 channel=payload.cached_message.channel.mention,
                 _id=('Message ID', payload.message_id),
-                message=message
+                message=message,
+                attachment=attachment_url
             )
         else:
             embed = self.make_embed(
