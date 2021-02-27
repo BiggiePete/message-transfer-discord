@@ -13,12 +13,10 @@ class Logs(commands.Cog):
     def make_embed(title: str, author: str, channel: str, _id: tuple, message: str, attachment: Optional[str]=None):
         """Make embed template used by different events"""
 
-        time = datetime.datetime.utcnow() - datetime.timedelta(hours=5)
-
         embed = discord.Embed(
             title=title,
-            description=str(time),
-            color=discord.Color.dark_red()
+            color=discord.Color.dark_red(),
+            timestamp=datetime.datetime.utcnow()
         )
         embed.add_field(name='Author', value=author, inline=True)
         embed.add_field(name='Channel', value=channel, inline=True)
@@ -113,6 +111,12 @@ class Logs(commands.Cog):
         self.check_embed_size(embed)
 
         await self.log_channel.send(embed=embed)
+    
+    @commands.Cog.listener()
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
+        """Log edited messages to log channel"""
+
+        pass
 
 
 def setup(bot: commands.Bot):
