@@ -7,10 +7,11 @@ from discord.ext import commands
 class Logs(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.log_channel = bot.get_channel(812408474511474709)
+        self.log_message_channel = bot.get_channel(812408474511474709)
+        self.log_join_leave_channel = bot.get_channel(812408531772375060)
 
     @staticmethod
-    def make_embed(
+    def make_message_embed(
         meta: dict,
         author: str,
         channel: str,
@@ -34,7 +35,11 @@ class Logs(commands.Cog):
 
         # chunk message if longer than 1024
         for i, chunk in  enumerate(range(0, len(message), 1024)):
-            embed.add_field(name=f'Message Part {i+1}', value=message[chunk:chunk+1024], inline=False)
+            embed.add_field(
+                name=f'{meta.get("m_name")} Part {i+1}',
+                value=message[chunk:chunk+1024],
+                inline=False
+            )
 
         return embed
 
@@ -51,7 +56,7 @@ class Logs(commands.Cog):
             total += str(item) if str(item) != 'Embed.Empty' else ''
 
         if len(total) > 6000:
-            excess = (len(total) % 6000) + 23 # 23 len of Message Error field
+            excess = (len(total) - 6000) + 23 # 23 len of Message Error field
 
             for i in range(len(embed.fields)-1, -1, -1):
                 if excess <= 0: break
@@ -103,13 +108,14 @@ class Logs(commands.Cog):
 
         meta = {
             'title': 'Deleted Message',
-            'color': discord.Color.from_rgb(255, 0, 0)
+            'color': discord.Color.from_rgb(255, 0, 0),
+            'm_name': 'Message'
         }
 
         if payload.cached_message:
             message, attachment_url = self.make_message(payload.cached_message)            
 
-            embed = self.make_embed(
+            embed = self.make_message_embed(
                 meta=meta,
                 author=payload.cached_message.author.mention,
                 channel=payload.cached_message.channel.mention,
@@ -118,7 +124,7 @@ class Logs(commands.Cog):
                 attachment=attachment_url
             )
         else:
-            embed = self.make_embed(
+            embed = self.make_message_embed(
                 meta=meta,
                 author='Unknown',
                 channel=self.bot.get_channel(payload.channel_id).mention,
@@ -141,13 +147,14 @@ class Logs(commands.Cog):
 
         meta = {
             'title': 'Edited Message',
-            'color': discord.Color.from_rgb(255, 250, 0)
+            'color': discord.Color.from_rgb(255, 250, 0),
+            'm_name': 'Old Message'
         }
 
         if payload.cached_message:
             message, attachment_url = self.make_message(payload.cached_message) 
 
-            embed = self.make_embed(
+            embed = self.make_message_embed(
                 meta=meta,
                 author=payload.cached_message.author.mention,
                 channel=payload.cached_message.channel.mention,
@@ -158,7 +165,7 @@ class Logs(commands.Cog):
         else:
             message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
-            embed = self.make_embed(
+            embed = self.make_message_embed(
                 meta=meta,
                 author=message.author.mention,
                 channel=self.bot.get_channel(payload.channel_id).mention,
@@ -170,6 +177,51 @@ class Logs(commands.Cog):
         self.check_embed_size(embed)
 
         await self.log_channel.send(embed=embed)
+
+    @staticmethod
+    def make_member_embed(meta: dict, member: discord.Member) -> discord.Embed:
+        """Make embed for member join or leave"""
+
+        # format member account creation time
+        creation = (member.created_at - datetime.timedelta(hours=5)).strftime('%B %d, %Y - %-I:%-M%p')
+
+        embed = discord.Embed(
+            title=meta.get('title'),
+            color=meta.get('color'),
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.add_field(name='Member', value=member.mention, inline=True)
+        embed.add_field(name='ID', value=member.id, inline=True)
+        embed.add_field(name='Account Created', value=creation, inline=False)
+
+        return embed
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        """Log when member joins the guild"""
+
+        meta = {
+            'title': 'Member Join',
+            'color': discord.Color.from_rgb(0, 255, 30)
+        }
+
+        embed = self.make_member_embed(meta, member)
+
+        await self.log_join_leave_channel.send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        """Log when member leaves the guild"""
+
+        meta = {
+            'title': 'Member Remove',
+            'color': discord.Color.from_rgb(255, 0, 0)
+        }
+
+        embed = self.make_member_embed(meta, member)
+
+        await self.log_join_leave_channel.send(embed=embed)
 
 
 def setup(bot: commands.Bot):
