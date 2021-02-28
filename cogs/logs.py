@@ -10,12 +10,19 @@ class Logs(commands.Cog):
         self.log_channel = bot.get_channel(812408474511474709)
 
     @staticmethod
-    def make_embed(title: str, author: str, channel: str, _id: tuple, message: str, attachment: Optional[str]=None):
+    def make_embed(
+        meta: dict,
+        author: str,
+        channel: str,
+        _id: tuple,
+        message: str,
+        attachment: Optional[str]=None
+    ) -> discord.Embed:
         """Make embed template used by different events"""
 
         embed = discord.Embed(
-            title=title,
-            color=discord.Color.dark_red(),
+            title=meta.get('title'),
+            color=meta.get('color'),
             timestamp=datetime.datetime.utcnow()
         )
         embed.add_field(name='Author', value=author, inline=True)
@@ -43,7 +50,6 @@ class Logs(commands.Cog):
         for item in fields:
             total += str(item) if str(item) != 'Embed.Empty' else ''
 
-
         if len(total) > 6000:
             excess = (len(total) % 6000) + 23 # 23 len of Message Error field
 
@@ -65,33 +71,45 @@ class Logs(commands.Cog):
 
             embed.add_field(name=f'Embed Error', value='Embed > 6000', inline=False)
 
+    @staticmethod
+    def make_message(cached_message) -> tuple:
+        """Make message from cached_message for embed"""
+
+        message = ''
+
+        if cached_message.content:
+                message += f'**message:** {cached_message.content}\n'
+
+        if cached_message.embeds:
+            for embed in cached_message.embeds:
+                message += f'**embed:** {str(embed.to_dict())}\n'
+            message += '\n'
+
+        if cached_message.attachments:
+            message += f'**attachment:**'
+            attachment_url = cached_message.attachments[0].proxy_url
+            message += '\n'
+
+        if cached_message.stickers:
+            # no way to test stickers without nitro member
+            print(cached_message.stickers)
+
+        return (message, attachment_url)
+
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
         """Log deleted messages to log channel"""
 
+        meta = {
+            'title': 'Deleted Message',
+            'color': discord.Color.from_rgb(255, 0, 0)
+        }
+
         if payload.cached_message:
-            message = ''
-            attachment_url = None
-
-            if payload.cached_message.content:
-                message += f'**message:** {payload.cached_message.content}\n'
-
-            if payload.cached_message.embeds:
-                for embed in payload.cached_message.embeds:
-                    message += f'**embed:** {str(embed.to_dict())}\n'
-                message += '\n'
-
-            if payload.cached_message.attachments:
-                message += f'**attachment:**'
-                attachment_url = payload.cached_message.attachments[0].proxy_url
-                message += '\n'
-
-            if payload.cached_message.stickers:
-                # no way to test stickers without nitro member
-                print(payload.cached_message.stickers)
+            message, attachment_url = self.make_message(payload.cached_message)            
 
             embed = self.make_embed(
-                title='Deleted Message',
+                meta=meta,
                 author=payload.cached_message.author.mention,
                 channel=payload.cached_message.channel.mention,
                 _id=('Message ID', payload.message_id),
@@ -100,7 +118,7 @@ class Logs(commands.Cog):
             )
         else:
             embed = self.make_embed(
-                title='Deleted Message',
+                meta=meta,
                 author='Unknown',
                 channel=self.bot.get_channel(payload.channel_id).mention,
                 _id=('Message ID', payload.message_id),
@@ -111,12 +129,43 @@ class Logs(commands.Cog):
         self.check_embed_size(embed)
 
         await self.log_channel.send(embed=embed)
-    
+
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
         """Log edited messages to log channel"""
 
-        pass
+        # ignore embeds
+        if payload.data['embeds']:
+            return
+
+        meta = {
+            'title': 'Edited Message',
+            'color': discord.Color.from_rgb(255, 250, 0)
+        }
+
+        if payload.cached_message:
+            message, attachment_url = self.make_message(payload.cached_message) 
+
+            embed = self.make_embed(
+                meta=meta,
+                author=payload.cached_message.author.mention,
+                channel=payload.cached_message.channel.mention,
+                _id=('Message ID', payload.message_id),
+                message=message,
+                attachment=attachment_url
+            )
+            await self.log_channel.send(embed=embed)
+        # else:
+        #     print('DATA', payload.data)
+        #     embed = self.make_embed(
+        #         meta=meta,
+        #         author='Unknown',
+        #         channel=self.bot.get_channel(payload.channel_id).mention,
+        #         _id=('Message ID', payload.message_id),
+        #         message='`Message not in cache`'
+        #     )
+
+    #     #     await self.log_channel.send(embed=embed)
 
 
 def setup(bot: commands.Bot):
