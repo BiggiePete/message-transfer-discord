@@ -3,7 +3,13 @@ import discord
 from discord.ext import commands
 
 # bot = commands.Bot(command_prefix=f'<@!{811718334583930970}> ')
-bot = commands.Bot(command_prefix='.', activity=discord.Game(f'KEKW'))
+bot = commands.Bot(
+    command_prefix='.',
+    activity=discord.Game(f'KEKW'),
+    intents=discord.Intents().all()
+)
+
+# bot.remove_command('help')
 
 
 @bot.event
