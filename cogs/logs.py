@@ -76,6 +76,7 @@ class Logs(commands.Cog):
         """Make message from cached_message for embed"""
 
         message = ''
+        attachment_url = None
 
         if cached_message.content:
                 message += f'**message:** {cached_message.content}\n'
@@ -150,22 +151,25 @@ class Logs(commands.Cog):
                 meta=meta,
                 author=payload.cached_message.author.mention,
                 channel=payload.cached_message.channel.mention,
-                _id=('Message ID', payload.message_id),
+                _id=('Message Link', f'[{payload.message_id}]({payload.cached_message.jump_url})'),
                 message=message,
                 attachment=attachment_url
             )
-            await self.log_channel.send(embed=embed)
-        # else:
-        #     print('DATA', payload.data)
-        #     embed = self.make_embed(
-        #         meta=meta,
-        #         author='Unknown',
-        #         channel=self.bot.get_channel(payload.channel_id).mention,
-        #         _id=('Message ID', payload.message_id),
-        #         message='`Message not in cache`'
-        #     )
+        else:
+            message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
-    #     #     await self.log_channel.send(embed=embed)
+            embed = self.make_embed(
+                meta=meta,
+                author=message.author.mention,
+                channel=self.bot.get_channel(payload.channel_id).mention,
+                _id=('Message Link', f'[{payload.message_id}]({message.jump_url})'),
+                message='`Message not in cache`'
+            )
+
+        # check if embed is too big to send
+        self.check_embed_size(embed)
+
+        await self.log_channel.send(embed=embed)
 
 
 def setup(bot: commands.Bot):
