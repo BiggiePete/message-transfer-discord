@@ -93,4 +93,5 @@ class Loops(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Loops(bot))
+    # bot.add_cog(Loops(bot))
+    return

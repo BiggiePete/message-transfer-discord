@@ -13,7 +13,7 @@ class Dev(commands.Cog):
         """Load an extension"""
 
         try:
-            self.bot.load_extension(f'cogs.{extension}')
+            self.bot.load_extension(f'extensions.{extension}')
             await ctx.send(f'Successfully loaded extension `{extension}`')
         except Exception as e:
             await ctx.send(f'Error loading extension:\n`{e}`')
@@ -33,7 +33,7 @@ class Dev(commands.Cog):
         """Unload an extension"""
 
         try:
-            self.bot.unload_extension(f'cogs.{extension}')
+            self.bot.unload_extension(f'extensions.{extension}')
             await ctx.send(f'Successfully unloaded extension `{extension}`')
         except Exception as e:
             await ctx.send(f'Error unloadeding extension:\n`{e}`')
@@ -53,7 +53,7 @@ class Dev(commands.Cog):
         """Reload an extension"""
 
         try:
-            self.bot.reload_extension(f'cogs.{extension}')
+            self.bot.reload_extension(f'extensions.{extension}')
             await ctx.send(f'Successfully reloaded extension `{extension}`')
         except Exception as e:
             await ctx.send(f'Error reloading extension:\n`{e}`')

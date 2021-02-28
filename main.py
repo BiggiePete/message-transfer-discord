@@ -11,9 +11,9 @@ async def on_ready():
     """When bot is first started"""
 
     # add all extensions
-    for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'cogs')):
+    for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'extensions')):
         if filename.endswith('.py'):
-            bot.load_extension(f'cogs.{filename[:-3]}')
+            bot.load_extension(f'extensions.{filename[:-3]}')
 
     print(f'Logged in as {bot.user}')
 
