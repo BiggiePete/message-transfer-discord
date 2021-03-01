@@ -2,13 +2,16 @@ import datetime
 from typing import Optional
 import discord
 from discord.ext import commands
+from discord.utils import get
 
 
 class Logs(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.guild = bot.get_guild(803002510864023593)
         self.log_message_channel = bot.get_channel(812408474511474709)
         self.log_join_leave_channel = bot.get_channel(812408531772375060)
+        self.log_kick_ban_channel = bot.get_channel(812408406530326538)
 
     @staticmethod
     def make_message_embed(
@@ -183,7 +186,7 @@ class Logs(commands.Cog):
         """Make embed for member join or leave"""
 
         # format member account creation time
-        creation = (member.created_at - datetime.timedelta(hours=5)).strftime('%B %d, %Y - %-I:%-M%p')
+        creation = (member.created_at - datetime.timedelta(hours=5)).strftime('%B %d, %Y - %-I:%M%p')
 
         embed = discord.Embed(
             title=meta.get('title'),
@@ -194,6 +197,32 @@ class Logs(commands.Cog):
         embed.add_field(name='Member', value=member.mention, inline=True)
         embed.add_field(name='ID', value=member.id, inline=True)
         embed.add_field(name='Account Created', value=creation, inline=False)
+
+        return embed
+    
+    @staticmethod
+    def make_kick_ban_embed(
+        meta: dict,
+        users: tuple,
+        reason: Optional[str]= None
+    ) -> discord.Embed:
+        """Make embed for when member is kicked or banned for logging"""
+        target, admin = users
+
+        embed = discord.Embed(
+            title=meta.get('title'),
+            color=meta.get('color'),
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.add_field(name='Target', value=target.mention, inline=True)
+        embed.add_field(name='ID', value=target.id, inline=True)
+        if not reason:
+            reason = '`None`'
+
+        embed.add_field(name='Reason', value=reason, inline=False)
+
+        embed.add_field(name='Admin', value=admin.mention, inline=True)
+        embed.add_field(name='ID', value=admin.id, inline=True)
 
         return embed
 
@@ -222,6 +251,31 @@ class Logs(commands.Cog):
         embed = self.make_member_embed(meta, member)
 
         await self.log_join_leave_channel.send(embed=embed)
+
+        # check if remove was by kick or ban
+        async for entry in self.guild.audit_logs(limit=10):
+            if entry.action == discord.AuditLogAction.kick and member.id == entry.target.id:
+                meta = {
+                    'title': 'Member Kicked',
+                    'color': discord.Color.from_rgb(255, 150, 0)
+                }
+                await self.log_kick_ban_channel.send(embed=self.make_kick_ban_embed(
+                    meta=meta,
+                    users=(entry.target, entry.user),
+                    reason=entry.reason
+                ))
+                break
+            elif entry.action == discord.AuditLogAction.ban and member.id == entry.target.id:
+                meta = {
+                    'title': 'Member Banned',
+                    'color': discord.Color.from_rgb(255, 0, 0)
+                }
+                await self.log_kick_ban_channel.send(embed=self.make_kick_ban_embed(
+                    meta=meta,
+                    users=(entry.target, entry.user),
+                    reason=entry.reason
+                ))
+                break
 
 
 def setup(bot: commands.Bot):
