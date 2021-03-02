@@ -3,19 +3,21 @@ from discord.ext import commands
 
 
 class Moderation(commands.Cog):
+    owner_role_id = 803002510922874980
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.guild = bot.get_guild(803002510864023593)
 
         self.blacklist_categories = [
-            805217167847063573, # Register
-            804825493856976906, # Information
-            804829689033785344, # Game Logs
-            812408184719147009  # Discord Logs
+            # 805217167847063573, # Register
+            # 804825493856976906, # Information
+            # 804829689033785344, # Game Logs
+            # 812408184719147009  # Discord Logs
         ]
 
     @commands.command()
-    @commands.has_permissions(manage_messages=True)
+    @commands.has_role(owner_role_id)
     async def purge(self, ctx: commands.Context, n: Optional[int]=1):
         """Purge chat messages"""
 
