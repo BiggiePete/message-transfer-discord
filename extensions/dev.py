@@ -46,7 +46,7 @@ class Dev(commands.Cog):
             return
 
         await ctx.send(f'Error executing unloadext:\n`{error}`')
-    
+
     @commands.command()
     @commands.has_role(owner_role_id)
     async def reloadext(self, ctx: commands.Context, extension: str):
