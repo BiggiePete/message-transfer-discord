@@ -2,7 +2,6 @@ import datetime
 from typing import Optional
 import discord
 from discord.ext import commands
-from discord.utils import get
 
 
 class Logs(commands.Cog):
@@ -138,7 +137,7 @@ class Logs(commands.Cog):
         # check if embed is too big to send
         self.check_embed_size(embed)
 
-        await self.log_channel.send(embed=embed)
+        await self.log_message_channel.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
