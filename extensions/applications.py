@@ -20,6 +20,11 @@ class Applications(commands.Cog):
                 'review_channel': bot.get_channel(816410712645566484),
                 'reviewer_role': get(self.guild.roles, id=816465523239550976),
                 'role': get(self.guild.roles, id=816387375218556959)
+            },
+            'unban': {
+                'review_channel': bot.get_channel(816763576408342538),
+                'reviewer_role': get(self.guild.roles, id=816763356290744361),
+                'role': get(self.guild.roles, id=816763651956539414)
             }
         }
 
@@ -105,7 +110,11 @@ class Applications(commands.Cog):
             applicant = get(self.bot.get_all_members(), id=applicant_id)
             if str(payload.emoji) == '✅': # app approved
                 try:
-                    await applicant.add_roles(self.valid_types[type]['role'])
+                    # for unban app, we actually remove banned role
+                    if type == 'unban':
+                        await applicant.remove_roles(self.valid_types[type]['role'])
+                    else:
+                        await applicant.add_roles(self.valid_types[type]['role'])
                     await self.cleanup_app(message, applicant, True)
                 except Exception as e:
                     print(f'Error adding applicant role to member: {e}')
