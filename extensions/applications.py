@@ -1,19 +1,31 @@
 import datetime
+import discord
 from discord.ext import commands
+from discord.utils import get
 
 
 class Applications(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.guild = bot.get_guild(803002510864023593)
+
         self.new_applications_channel = bot.get_channel(816416264766881832)
         self.valid_types = {
             'moderator': {
-                'review_channel': bot.get_channel(816410656257212416)
+                'review_channel': bot.get_channel(816410656257212416),
+                'reviewer_role': get(self.guild.roles, id=816458283019272212),
+                'role': get(self.guild.roles, id=803002510922874976)
             },
             'police': {
-                'review_channel': bot.get_channel(816410712645566484)
+                'review_channel': bot.get_channel(816410712645566484),
+                'reviewer_role': get(self.guild.roles, id=816465523239550976),
+                'role': get(self.guild.roles, id=816387375218556959)
             }
         }
+
+        self.valid_reaction_channel_ids = []
+        for key in self.valid_types.keys():
+            self.valid_reaction_channel_ids.append(self.valid_types[key]['review_channel'])
 
     @commands.command()
     async def app(self, ctx: commands.Context, type: str):
@@ -53,6 +65,35 @@ class Applications(commands.Cog):
             return
 
         await ctx.send(f'Error executing app:\n`{error}`')
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        """Application decision"""
+
+        # after review, delete app from reivew channel
+        # send decision to applicant via DM
+
+        # check if reaction added is the correct channel
+        channel = self.bot.get_channel(payload.channel_id)
+        if channel not in self.valid_reaction_channel_ids:
+            print('HERE1')
+            return
+
+        message = await channel.fetch_message(payload.message_id)
+        type = channel.name.split('-')[0]
+        applicant_id = int(message.content.split('\n')[0].split('@')[-1][:-1])
+
+        # check if reaction added was from proper reviewer
+        if self.valid_types[type]['reviewer_role'] in payload.member.roles:
+            if str(payload.emoji) == '✅': # app approved
+                try:
+                    applicant = get(self.bot.get_all_members(), id=applicant_id)
+                    await applicant.add_roles(self.valid_types[type]['role'])
+                except Exception as e:
+                    print(f'Error adding applicant role to member: {e}')
+            elif str(payload.emoji) == '❌': # app denied
+                pass
+            
 
 
 def setup(bot: commands.Bot):
