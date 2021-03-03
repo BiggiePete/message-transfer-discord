@@ -66,17 +66,34 @@ class Applications(commands.Cog):
 
         await ctx.send(f'Error executing app:\n`{error}`')
 
+    @staticmethod
+    async def cleanup_app(
+        message: discord.Message,
+        applicant: discord.Member,
+        decision: bool
+    ):
+        """Cleanup application after reviewer has made a decision"""
+
+        message_data = message.content.split('\n')
+        submission_time = ' '.join(message_data[1].split(' ')[2:])
+        type = message_data[2].split(':')[1].split(' ')[2]
+
+        if decision: decision = 'APPROVED'
+        else: decision = 'DENIED'
+        await applicant.send(
+            f'**ParadiseRP Application Decision**\nHi, {applicant.mention}.\n'
+            f'Your *{type}* application submitted on *{submission_time}* '
+            f'has been processed.\nYour application decision is: **{decision}**'
+        )
+        await message.delete()
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         """Application decision"""
 
-        # after review, delete app from reivew channel
-        # send decision to applicant via DM
-
         # check if reaction added is the correct channel
         channel = self.bot.get_channel(payload.channel_id)
         if channel not in self.valid_reaction_channel_ids:
-            print('HERE1')
             return
 
         message = await channel.fetch_message(payload.message_id)
@@ -85,15 +102,15 @@ class Applications(commands.Cog):
 
         # check if reaction added was from proper reviewer
         if self.valid_types[type]['reviewer_role'] in payload.member.roles:
+            applicant = get(self.bot.get_all_members(), id=applicant_id)
             if str(payload.emoji) == '✅': # app approved
                 try:
-                    applicant = get(self.bot.get_all_members(), id=applicant_id)
                     await applicant.add_roles(self.valid_types[type]['role'])
+                    await self.cleanup_app(message, applicant, True)
                 except Exception as e:
                     print(f'Error adding applicant role to member: {e}')
             elif str(payload.emoji) == '❌': # app denied
-                pass
-            
+                await self.cleanup_app(message, applicant, False)
 
 
 def setup(bot: commands.Bot):
