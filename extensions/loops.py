@@ -1,18 +1,12 @@
 import aiohttp
 import asyncio
 import json
-import discord
 from discord.ext import commands, tasks
+from cfg import cfg
 
 class Loops(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.guild = bot.get_guild(803002510864023593)
-
-        # channels
-        self.online_channel = bot.get_channel(804825065060302889)
-        self.player_count_channel = bot.get_channel(804825835344494612)
-        self.total_users_channel = bot.get_channel(804825997161005146)
 
         # statuses
         self.status = None
@@ -20,28 +14,15 @@ class Loops(commands.Cog):
         self.queue_count = None
         self.total_users = None
 
-        self.status_urls = [
-            'http://68.59.13.90:30120/players.json',
-            'http://68.59.13.90:30120/smileyrp_queue/count'
-        ]
-
         # start tasks
         self.get_status.start()
-
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
-        if message.author == self.bot.user:
-            return
-
-        if message.content.startswith('ping'):
-            await message.channel.send('pong!')
 
     @tasks.loop(minutes=1)
     async def get_status(self):
         """update status channel names"""
 
         async with aiohttp.ClientSession() as session:
-            coroutines = [self.request(session, url) for url in self.status_urls]
+            coroutines = [self.request(session, url) for url in cfg['status_urls']]
             players, queue = await asyncio.gather(*coroutines)
 
             if players is None or queue is None:
@@ -55,28 +36,27 @@ class Loops(commands.Cog):
 
             # check server dead or alive
             if self.status != status:
-                await self.online_channel.edit(name =
+                await cfg['online_channel'].edit(name =
                     f"rp.smileyrp.com: {'Online' if status else 'Offline'}"
                 )
 
             # check server player/queue count
             if self.player_count != player_count or self.queue_count != queue_count:
-                await self.player_count_channel.edit(name =
+                await cfg['player_count_channel'].edit(name =
                     f"Online Players: {player_count}+{queue_count}/64"
                 )
 
             # check change in discord member count
-            if self.total_users != self.guild.member_count:
-                await self.total_users_channel.edit(
-                    name=f'Total Users: {self.guild.member_count}'
+            if self.total_users != cfg['guild'].member_count:
+                await cfg['total_users_channel'].edit(
+                    name=f'Total Users: {cfg["guild"].member_count}'
                 )
 
             # update state
             self.status = status
             self.player_count = player_count
             self.queue_count = queue_count
-            self.total_users = self.guild.member_count
-            
+            self.total_users = cfg['guild'].member_count
 
     @staticmethod
     async def request(session: aiohttp.ClientSession, url: str):
