@@ -32,6 +32,7 @@ class Applications(commands.Cog):
                 f'The types available are: {", ".join(cfg["valid_app_types"])}.',
                 delete_after=10
             )
+            await ctx.message.delete()
             return
 
         created_at = (datetime.datetime.utcnow() - datetime.timedelta(hours=5))
@@ -52,6 +53,7 @@ class Applications(commands.Cog):
     async def app_error(self, ctx: commands.Context, error: commands.CommandError):
         """Function executed when there was an error associated with reloadext"""
 
+        await ctx.message.delete()
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(
                 f'{ctx.author.mention}, you must supply an application type. '
