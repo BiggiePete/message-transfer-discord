@@ -2,51 +2,121 @@ import datetime
 from typing import Optional
 import discord
 from discord.ext import commands
+from cfg import cfg
 
 
 class Logs(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.guild = bot.get_guild(803002510864023593)
-        self.log_message_channel = bot.get_channel(812408474511474709)
-        self.log_join_leave_channel = bot.get_channel(812408531772375060)
-        self.log_kick_ban_channel = bot.get_channel(812408406530326538)
 
-    @staticmethod
-    def make_message_embed(
-        meta: dict,
-        author: str,
-        channel: str,
-        _id: tuple,
-        message: str,
-        attachment: Optional[str]=None
-    ) -> discord.Embed:
-        """Make embed template used by different events"""
 
-        embed = discord.Embed(
-            title=meta.get('title'),
-            color=meta.get('color'),
-            timestamp=datetime.datetime.utcnow()
-        )
-        embed.add_field(name='Author', value=author, inline=True)
-        embed.add_field(name='Channel', value=channel, inline=True)
-        embed.add_field(name=_id[0], value=_id[1], inline=True)
+    """
+    Messages
+    """
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
+        """Log deleted messages to log channel"""
 
-        if attachment:
-            embed.set_image(url=attachment)
+        meta = {
+            'title': 'Deleted Message',
+            'color': discord.Color.from_rgb(255, 0, 0),
+            'm_name': 'Message'
+        }
 
-        # chunk message if longer than 1024
-        for i, chunk in  enumerate(range(0, len(message), 1024)):
-            embed.add_field(
-                name=f'{meta.get("m_name")} Part {i+1}',
-                value=message[chunk:chunk+1024],
-                inline=False
+        if payload.cached_message:
+            message, attachment_url = await self.make_message(payload.cached_message)            
+
+            embed = await self.make_message_embed(
+                meta=meta,
+                author=payload.cached_message.author.mention,
+                channel=payload.cached_message.channel.mention,
+                _id=('Message ID', payload.message_id),
+                message=message,
+                attachment=attachment_url
+            )
+        else:
+            embed = await self.make_message_embed(
+                meta=meta,
+                author='Unknown',
+                channel=self.bot.get_channel(payload.channel_id).mention,
+                _id=('Message ID', payload.message_id),
+                message='`Message not in cache`'
             )
 
-        return embed
+        # check if embed is too big to send
+        await self.check_embed_size(embed)
+
+        await cfg['log_message_channel'].send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
+        """Log edited messages to log channel"""
+
+        # ignore embeds
+        if payload.data['embeds']:
+            return
+
+        meta = {
+            'title': 'Edited Message',
+            'color': discord.Color.from_rgb(255, 250, 0),
+            'm_name': 'Old Message'
+        }
+
+        if payload.cached_message:
+            message, attachment_url = await self.make_message(payload.cached_message) 
+
+            embed = await self.make_message_embed(
+                meta=meta,
+                author=payload.cached_message.author.mention,
+                channel=payload.cached_message.channel.mention,
+                _id=('Message Link', f'[{payload.message_id}]({payload.cached_message.jump_url})'),
+                message=message,
+                attachment=attachment_url
+            )
+        else:
+            message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+
+            embed = await self.make_message_embed(
+                meta=meta,
+                author=message.author.mention,
+                channel=self.bot.get_channel(payload.channel_id).mention,
+                _id=('Message Link', f'[{payload.message_id}]({message.jump_url})'),
+                message='`Message not in cache`'
+            )
+
+        # check if embed is too big to send
+        await self.check_embed_size(embed)
+
+        await cfg['log_message_channel'].send(embed=embed)
 
     @staticmethod
-    def check_embed_size(embed: discord.Embed):
+    async def make_message(cached_message) -> tuple:
+        """Make message from cached_message for embed"""
+
+        message = ''
+        attachment_url = None
+
+        if cached_message.content:
+                message += f'**message:** {cached_message.content}\n'
+
+        if cached_message.embeds:
+            for embed in cached_message.embeds:
+                message += f'**embed:** {str(embed.to_dict())}\n'
+            message += '\n'
+
+        if cached_message.attachments:
+            message += f'**attachment:**'
+            attachment_url = cached_message.attachments[0].proxy_url
+            message += '\n'
+
+        if cached_message.stickers:
+            # no way to test stickers without nitro member
+            print(cached_message.stickers)
+
+        return (message, attachment_url)
+
+    @staticmethod
+    async def check_embed_size(embed: discord.Embed):
         """Return embed shortened if longer than the limit of 6000"""
 
         fields = [embed.title, embed.description, embed.footer.text, embed.author.name]
@@ -79,109 +149,95 @@ class Logs(commands.Cog):
             embed.add_field(name=f'Embed Error', value='Embed > 6000', inline=False)
 
     @staticmethod
-    def make_message(cached_message) -> tuple:
-        """Make message from cached_message for embed"""
+    async def make_message_embed(
+        meta: dict,
+        author: str,
+        channel: str,
+        _id: tuple,
+        message: str,
+        attachment: Optional[str]=None
+    ) -> discord.Embed:
+        """Make embed template used by different events"""
 
-        message = ''
-        attachment_url = None
+        embed = discord.Embed(
+            title=meta.get('title'),
+            color=meta.get('color'),
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.add_field(name='Author', value=author, inline=True)
+        embed.add_field(name='Channel', value=channel, inline=True)
+        embed.add_field(name=_id[0], value=_id[1], inline=True)
 
-        if cached_message.content:
-                message += f'**message:** {cached_message.content}\n'
+        if attachment:
+            embed.set_image(url=attachment)
 
-        if cached_message.embeds:
-            for embed in cached_message.embeds:
-                message += f'**embed:** {str(embed.to_dict())}\n'
-            message += '\n'
+        # chunk message if longer than 1024
+        for i, chunk in  enumerate(range(0, len(message), 1024)):
+            embed.add_field(
+                name=f'{meta.get("m_name")} Part {i+1}',
+                value=message[chunk:chunk+1024],
+                inline=False
+            )
 
-        if cached_message.attachments:
-            message += f'**attachment:**'
-            attachment_url = cached_message.attachments[0].proxy_url
-            message += '\n'
+        return embed
 
-        if cached_message.stickers:
-            # no way to test stickers without nitro member
-            print(cached_message.stickers)
 
-        return (message, attachment_url)
-
+    """
+    Join/Leave
+    """
     @commands.Cog.listener()
-    async def on_raw_message_delete(self, payload: discord.RawMessageDeleteEvent):
-        """Log deleted messages to log channel"""
+    async def on_member_join(self, member: discord.Member):
+        """Log when member joins the guild"""
 
         meta = {
-            'title': 'Deleted Message',
-            'color': discord.Color.from_rgb(255, 0, 0),
-            'm_name': 'Message'
+            'title': 'Member Join',
+            'color': discord.Color.from_rgb(0, 255, 30)
         }
 
-        if payload.cached_message:
-            message, attachment_url = self.make_message(payload.cached_message)            
+        embed = await self.make_member_embed(meta, member)
 
-            embed = self.make_message_embed(
-                meta=meta,
-                author=payload.cached_message.author.mention,
-                channel=payload.cached_message.channel.mention,
-                _id=('Message ID', payload.message_id),
-                message=message,
-                attachment=attachment_url
-            )
-        else:
-            embed = self.make_message_embed(
-                meta=meta,
-                author='Unknown',
-                channel=self.bot.get_channel(payload.channel_id).mention,
-                _id=('Message ID', payload.message_id),
-                message='`Message not in cache`'
-            )
-
-        # check if embed is too big to send
-        self.check_embed_size(embed)
-
-        await self.log_message_channel.send(embed=embed)
+        await cfg['log_join_leave_channel'].send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
-        """Log edited messages to log channel"""
-
-        # ignore embeds
-        if payload.data['embeds']:
-            return
+    async def on_member_remove(self, member: discord.Member):
+        """Log when member leaves the guild"""
 
         meta = {
-            'title': 'Edited Message',
-            'color': discord.Color.from_rgb(255, 250, 0),
-            'm_name': 'Old Message'
+            'title': 'Member Remove',
+            'color': discord.Color.from_rgb(255, 0, 0)
         }
 
-        if payload.cached_message:
-            message, attachment_url = self.make_message(payload.cached_message) 
+        embed = await self.make_member_embed(meta, member)
 
-            embed = self.make_message_embed(
-                meta=meta,
-                author=payload.cached_message.author.mention,
-                channel=payload.cached_message.channel.mention,
-                _id=('Message Link', f'[{payload.message_id}]({payload.cached_message.jump_url})'),
-                message=message,
-                attachment=attachment_url
-            )
-        else:
-            message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        await cfg['log_join_leave_channel'].send(embed=embed)
 
-            embed = self.make_message_embed(
-                meta=meta,
-                author=message.author.mention,
-                channel=self.bot.get_channel(payload.channel_id).mention,
-                _id=('Message Link', f'[{payload.message_id}]({message.jump_url})'),
-                message='`Message not in cache`'
-            )
-
-        # check if embed is too big to send
-        self.check_embed_size(embed)
-
-        await self.log_channel.send(embed=embed)
+        # check if remove was by kick or ban
+        async for entry in cfg['guild'].audit_logs(limit=10):
+            if entry.action == discord.AuditLogAction.kick and member.id == entry.target.id:
+                meta = {
+                    'title': 'Member Kicked',
+                    'color': discord.Color.from_rgb(255, 150, 0)
+                }
+                await cfg['log_kick_ban_channel'].send(embed=await self.make_kick_ban_embed(
+                    meta=meta,
+                    users=(entry.target, entry.user),
+                    reason=entry.reason
+                ))
+                break
+            elif entry.action == discord.AuditLogAction.ban and member.id == entry.target.id:
+                meta = {
+                    'title': 'Member Banned',
+                    'color': discord.Color.from_rgb(255, 0, 0)
+                }
+                await cfg['log_kick_ban_channel'].send(embed=await self.make_kick_ban_embed(
+                    meta=meta,
+                    users=(entry.target, entry.user),
+                    reason=entry.reason
+                ))
+                break
 
     @staticmethod
-    def make_member_embed(meta: dict, member: discord.Member) -> discord.Embed:
+    async def make_member_embed(meta: dict, member: discord.Member) -> discord.Embed:
         """Make embed for member join or leave"""
 
         # format member account creation time
@@ -198,9 +254,9 @@ class Logs(commands.Cog):
         embed.add_field(name='Account Created', value=creation, inline=False)
 
         return embed
-    
+
     @staticmethod
-    def make_kick_ban_embed(
+    async def make_kick_ban_embed(
         meta: dict,
         users: tuple,
         reason: Optional[str]= None
@@ -224,57 +280,6 @@ class Logs(commands.Cog):
         embed.add_field(name='ID', value=admin.id, inline=True)
 
         return embed
-
-    @commands.Cog.listener()
-    async def on_member_join(self, member: discord.Member):
-        """Log when member joins the guild"""
-
-        meta = {
-            'title': 'Member Join',
-            'color': discord.Color.from_rgb(0, 255, 30)
-        }
-
-        embed = self.make_member_embed(meta, member)
-
-        await self.log_join_leave_channel.send(embed=embed)
-
-    @commands.Cog.listener()
-    async def on_member_remove(self, member: discord.Member):
-        """Log when member leaves the guild"""
-
-        meta = {
-            'title': 'Member Remove',
-            'color': discord.Color.from_rgb(255, 0, 0)
-        }
-
-        embed = self.make_member_embed(meta, member)
-
-        await self.log_join_leave_channel.send(embed=embed)
-
-        # check if remove was by kick or ban
-        async for entry in self.guild.audit_logs(limit=10):
-            if entry.action == discord.AuditLogAction.kick and member.id == entry.target.id:
-                meta = {
-                    'title': 'Member Kicked',
-                    'color': discord.Color.from_rgb(255, 150, 0)
-                }
-                await self.log_kick_ban_channel.send(embed=self.make_kick_ban_embed(
-                    meta=meta,
-                    users=(entry.target, entry.user),
-                    reason=entry.reason
-                ))
-                break
-            elif entry.action == discord.AuditLogAction.ban and member.id == entry.target.id:
-                meta = {
-                    'title': 'Member Banned',
-                    'color': discord.Color.from_rgb(255, 0, 0)
-                }
-                await self.log_kick_ban_channel.send(embed=self.make_kick_ban_embed(
-                    meta=meta,
-                    users=(entry.target, entry.user),
-                    reason=entry.reason
-                ))
-                break
 
 
 def setup(bot: commands.Bot):
