@@ -1,12 +1,12 @@
 import os
-from cfg import bot, setup
+from cfg import bot, setup_cfg
 
 @bot.event
 async def on_ready():
     """When bot is first started"""
 
     # setup cfg
-    setup()
+    setup_cfg()
 
     # add all extensions
     for filename in os.listdir(os.path.join(os.path.dirname(__file__), 'extensions')):
