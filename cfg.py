@@ -8,11 +8,10 @@ bot = commands.Bot(
     activity=discord.Game(f'KEKW'),
     intents=discord.Intents().all()
 )
-# bot.remove_command('help')
+bot.remove_command('help')
 
 cfg = {}
-
-def setup():
+def setup_cfg():
     """Setup cfg dict after bot is ready"""
 
     guild = bot.get_guild(803002510864023593)
@@ -21,32 +20,21 @@ def setup():
         'guild': guild,
         'owner_role': get(guild.roles, id=803002510922874980),
 
-        # whitelist
-        'rules_message_id': 812427095048192000,
-        'whitelisted_role_id': 804942365718478928,
-
-        # channels
-        'online_channel': bot.get_channel(804825065060302889),
-        'player_count_channel': bot.get_channel(804825835344494612),
-        'total_users_channel': bot.get_channel(804825997161005146),
-
-        'log_message_channel': bot.get_channel(812408474511474709),
-        'log_join_leave_channel': bot.get_channel(812408531772375060),
-        'log_kick_ban_channel': bot.get_channel(812408406530326538),
-
-        'new_applications_channel': bot.get_channel(816416264766881832),
-
-        # emojis
-        'emojis': {
-            'checkmark': '✅',
-            'x': '❌'
-        },
-
-        # misc
+        # Stats
         'status_urls': [
             'http://68.59.13.90:30120/players.json',
             'http://68.59.13.90:30120/smileyrp_queue/count'
         ],
+        'online_channel': bot.get_channel(804825065060302889),
+        'player_count_channel': bot.get_channel(804825835344494612),
+        'total_users_channel': bot.get_channel(804825997161005146),
+
+        # Registration
+        'rules_message_id': 812427095048192000,
+        'whitelisted_role': get(guild.roles, id=804942365718478928),
+
+        # Applications
+        'new_applications_channel': bot.get_channel(816416264766881832),
         'valid_app_types': {
             'moderator': {
                 'review_channel': bot.get_channel(816410656257212416),
@@ -63,6 +51,17 @@ def setup():
                 'reviewer_role': get(guild.roles, id=816763356290744361),
                 'role': get(guild.roles, id=816763651956539414)
             }
+        },
+
+        # Logs
+        'log_message_channel': bot.get_channel(812408474511474709),
+        'log_join_leave_channel': bot.get_channel(812408531772375060),
+        'log_kick_ban_channel': bot.get_channel(812408406530326538),
+
+        # Emojis
+        'emojis': {
+            'checkmark': '✅',
+            'x': '❌'
         }
     }
 
