@@ -1,13 +1,11 @@
 from typing import Optional
 from discord.ext import commands
+from cfg import cfg
 
 
 class Moderation(commands.Cog):
-    owner_role_id = 803002510922874980
-
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.guild = bot.get_guild(803002510864023593)
 
         self.blacklist_categories = [
             # 805217167847063573, # Register
@@ -17,7 +15,7 @@ class Moderation(commands.Cog):
         ]
 
     @commands.command()
-    @commands.has_role(owner_role_id)
+    @commands.has_role(cfg['owner_role'].id)
     async def purge(self, ctx: commands.Context, n: Optional[int]=1):
         """Purge chat messages"""
 
@@ -28,10 +26,10 @@ class Moderation(commands.Cog):
     async def purge_error(self, ctx: commands.Context, error: commands.CommandError):
         """Function executed when there was an error associated with purge"""
 
-        if isinstance(error, commands.MissingPermissions):
+        if isinstance(error, commands.MissingRole):
             return
 
-        await ctx.send(f'Error executing purge:\n`{error}`')
+        await ctx.send(f'Error executing purge:\n`{error}`', delete_after=10)
 
 
 def setup(bot: commands.Bot):
