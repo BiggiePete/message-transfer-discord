@@ -8,7 +8,7 @@ bot = commands.Bot(
     activity=discord.Game(f'KEKW'),
     intents=discord.Intents().all()
 )
-bot.remove_command('help')
+# bot.remove_command('help')
 
 cfg = {}
 
@@ -19,7 +19,7 @@ def setup():
 
     _ = {
         'guild': guild,
-        'owner_role_id': 803002510922874980,
+        'owner_role': get(guild.roles, id=803002510922874980),
 
         # whitelist
         'rules_message_id': 812427095048192000,
