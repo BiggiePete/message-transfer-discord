@@ -22,13 +22,15 @@ class Applications(commands.Cog):
         if ctx.channel != cfg['new_applications_channel']:
             await ctx.send(
                 f'Sorry {ctx.author.mention}, new applications can only be made '
-                f'in the {cfg["new_applications_channel"].mention} channel.'
+                f'in the {cfg["new_applications_channel"].mention} channel.',
+                delete_after=10
             )
             return
         elif app_type not in list(cfg['valid_app_types'].keys()):
             await ctx.send(
                 f'Sorry {ctx.author.mention}, {app_type} is an invalid application type. '
-                f'The types available are: {", ".join(cfg["valid_app_types"])}.'
+                f'The types available are: {", ".join(cfg["valid_app_types"])}.',
+                delete_after=10
             )
             return
 
@@ -54,11 +56,12 @@ class Applications(commands.Cog):
             await ctx.send(
                 f'{ctx.author.mention}, you must supply an application type. '
                 f'The types available are: {", ".join(cfg["valid_app_types"])}.\n'
-                'Type **.help** if you need more information.'
+                'Type **.help** if you need more information.',
+                delete_after=10
             )
             return
 
-        await ctx.send(f'Error executing app:\n`{error}`')
+        await ctx.send(f'Error executing app:\n`{error}`', delete_after=10)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
