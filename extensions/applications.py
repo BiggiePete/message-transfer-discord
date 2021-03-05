@@ -14,7 +14,6 @@ class Applications(commands.Cog):
             self.valid_reaction_channel_ids.append(
                 cfg['valid_app_types'][key]['review_channel']
             )
-    
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -59,8 +58,8 @@ class Applications(commands.Cog):
         channel = cfg['valid_app_types'][app_type]['review_channel']
 
         review = await channel.send(app_review_text)
-        await review.add_reaction(cfg['emojis']['checkmark'])
-        await review.add_reaction(cfg['emojis']['x'])
+        await review.add_reaction(cfg['emojis']['yes']['full'])
+        await review.add_reaction(cfg['emojis']['no']['full'])
 
     @app.error
     async def app_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -94,7 +93,7 @@ class Applications(commands.Cog):
         # check if reaction added was from proper reviewer
         if cfg['valid_app_types'][app_type]['reviewer_role'] in payload.member.roles:
             applicant = get(self.bot.get_all_members(), id=applicant_id)
-            if str(payload.emoji) == cfg['emojis']['checkmark']: # app approved
+            if payload.emoji.id == cfg['emojis']['yes']['id']: # app approved
                 try:
                     # for unban app, we actually remove banned role
                     if app_type == 'unban':
@@ -110,7 +109,7 @@ class Applications(commands.Cog):
                     await self.cleanup_app(message, applicant, True)
                 except Exception as e:
                     print(f'Error adding applicant role to member: {e}')
-            elif str(payload.emoji) == cfg['emojis']['x']: # app denied
+            elif payload.emoji.id == cfg['emojis']['no']['id']: # app denied
                 await self.cleanup_app(message, applicant, False)
 
     @staticmethod
