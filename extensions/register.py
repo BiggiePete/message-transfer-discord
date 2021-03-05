@@ -14,7 +14,10 @@ class Register(commands.Cog):
         if payload.message_id == cfg['rules_message_id']:
             if str(payload.emoji) == cfg['emojis']['checkmark']:
                 try:
-                    await payload.member.add_roles(cfg['whitelisted_role'])
+                    await payload.member.add_roles(
+                        cfg['whitelisted_role'],
+                        cfg['general_role_spacer']
+                    )
                 except Exception as e:
                     print(f'Error adding whitelist role to member: {e}')
 

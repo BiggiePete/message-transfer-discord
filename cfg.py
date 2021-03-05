@@ -32,6 +32,7 @@ def setup_cfg():
         # Registration
         'rules_message_id': 812427095048192000,
         'whitelisted_role': get(guild.roles, id=804942365718478928),
+        'general_role_spacer': get(guild.roles, id=816801261247922176),
 
         # Applications
         'new_applications_channel': bot.get_channel(816416264766881832),
