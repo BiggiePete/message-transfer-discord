@@ -14,6 +14,19 @@ class Applications(commands.Cog):
             self.valid_reaction_channel_ids.append(
                 cfg['valid_app_types'][key]['review_channel']
             )
+    
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        """On message event to check if message is not a command in new-apps
+        channel
+        """
+
+        if message.author == self.bot.user: return
+
+        if message.channel == cfg['new_applications_channel'] \
+        and message.content[:5] != '.app ':
+            await message.delete()
 
     @commands.command()
     async def app(self, ctx: commands.Context, app_type: str):
@@ -85,9 +98,15 @@ class Applications(commands.Cog):
                 try:
                     # for unban app, we actually remove banned role
                     if app_type == 'unban':
-                        await applicant.remove_roles(cfg['valid_app_types'][app_type]['role'])
+                        await applicant.remove_roles(
+                            cfg['valid_app_types'][app_type]['role'],
+                            cfg['valid_app_types'][app_type]['role_spacer']
+                        )
                     else:
-                        await applicant.add_roles(cfg['valid_app_types'][app_type]['role'])
+                        await applicant.add_roles(
+                            cfg['valid_app_types'][app_type]['role'],
+                            cfg['valid_app_types'][app_type]['role_spacer']
+                        )
                     await self.cleanup_app(message, applicant, True)
                 except Exception as e:
                     print(f'Error adding applicant role to member: {e}')
