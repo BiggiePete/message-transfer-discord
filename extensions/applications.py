@@ -48,18 +48,28 @@ class Applications(commands.Cog):
             return
 
         created_at = (datetime.datetime.utcnow() - datetime.timedelta(hours=5))
+        created_at = created_at.strftime("%B %d, %Y - %-I:%M%p")
         app_review_text = (
             f'**User:** {ctx.author.mention}\n'
-            f'**Submitted at:** {created_at.strftime("%B %d, %Y - %-I:%M%p")}\n'
+            f'**Submitted at:** {created_at}\n'
             f'**Application:** {ctx.message.content[4:]}'
         )
 
         await ctx.message.delete()
         channel = cfg['valid_app_types'][app_type]['review_channel']
 
+        # move application to review channel
         review = await channel.send(app_review_text)
         await review.add_reaction(cfg['emojis']['yes']['full'])
         await review.add_reaction(cfg['emojis']['no']['full'])
+
+        # send confirmation message to author saying their application was submitted
+        await ctx.author.send(
+            f'**ParadiseRP Application Submitted**\nHi, {ctx.author.mention}.\n'
+            f'Your *{app_type}* application has successfully been submitted at '
+            f'*{created_at}*. The respective application reviewers will '
+            f'begin to review your application.'
+        )
 
     @app.error
     async def app_error(self, ctx: commands.Context, error: commands.CommandError):
