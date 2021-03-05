@@ -39,17 +39,20 @@ def setup_cfg():
             'moderator': {
                 'review_channel': bot.get_channel(816410656257212416),
                 'reviewer_role': get(guild.roles, id=816458283019272212),
-                'role': get(guild.roles, id=803002510922874976)
+                'role': get(guild.roles, id=803002510922874976),
+                'role_spacer': get(guild.roles, id=816797670139232276)
             },
             'police': {
                 'review_channel': bot.get_channel(816410712645566484),
                 'reviewer_role': get(guild.roles, id=816465523239550976),
-                'role': get(guild.roles, id=816387375218556959)
+                'role': get(guild.roles, id=816387375218556959),
+                'role_spacer': get(guild.roles, id=816806694176161803)
             },
             'unban': {
                 'review_channel': bot.get_channel(816763576408342538),
                 'reviewer_role': get(guild.roles, id=816763356290744361),
-                'role': get(guild.roles, id=816763651956539414)
+                'role': get(guild.roles, id=816763651956539414),
+                'role_spacer': get(guild.roles, id=816801869602619452)
             }
         },
 
