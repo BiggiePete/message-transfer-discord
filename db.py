@@ -44,7 +44,7 @@ class DB:
             0,
         ))
         self.connection.commit()
-    
+
     def member_exists(self, member: discord.Member):
         """Return if member exists in db referenced from discord.Member"""
 
@@ -54,11 +54,19 @@ class DB:
 
         if not self.c.fetchone(): return False
         return True
-    
+
     def add_points(self, member: discord.Member, points: int):
         """Add points to discord member"""
 
         self.c.execute('''
             UPDATE members SET points=points+? WHERE discord_id=?
         ''', (points, member.id,))
+        self.connection.commit()
+    
+    def reset_points(self, member: discord.Member):
+        """Reset points of discord member"""
+
+        self.c.execute('''
+            UPDATE members SET points=0 WHERE discord_id=?
+        ''',  (member.id,))
         self.connection.commit()
