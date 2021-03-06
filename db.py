@@ -46,5 +46,12 @@ class DB:
 
         self.connection.commit()
     
-    # def get_member(self, member: discord.Member):
-    #     """Return member from db referenced from discord.Member"""
+    def member_exists(self, member: discord.Member):
+        """Return if member exists in db referenced from discord.Member"""
+
+        self.c.execute('''
+            SELECT 1 from members WHERE discord_id=?
+        ''', (member.id))
+
+        if not self.c.fetchone(): return False
+        return True
