@@ -22,11 +22,11 @@ class DB:
         ''')
         self.connection.commit()
 
-    def purge(self):
-        """Drop all tables and data"""
+    def delete_all(self, table: str):
+        """Drop all data in table"""
 
-        self.c.execute('''
-            DROP TABLE *;
+        self.c.execute(f'''
+            DELETE FROM {table};
         ''')
         self.connection.commit()
 
