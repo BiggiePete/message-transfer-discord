@@ -12,6 +12,7 @@ class Moderation(commands.Cog):
         self.red = discord.Color.from_rgb(255, 0, 0)
         self.orange = discord.Color.from_rgb(255, 150, 0)
         self.black = discord.Color.from_rgb(0, 0, 0)
+        self.green = discord.Color.from_rgb(0, 255, 30)
 
         self.purge_blacklist_categories = [
             # 805217167847063573, # Register
@@ -49,33 +50,60 @@ class Moderation(commands.Cog):
 
     @commands.command()
     @commands.has_role(cfg['administration_spacer'].id)
-    async def notyping(self, ctx: commands.Context, member: discord.Member):
-        """Gives member No Typing role to prevent member from sending text
+    async def notype(self, ctx: commands.Context, member: discord.Member):
+        """Gives member No Type role to prevent member from sending text
         messages
         """
 
         meta = {
             'title': 'Moderation Command Executed',
-            'color': self.black
+            'color': self.orange
         }
 
-        await member.add_roles(cfg['no_typing_role'], cfg['trouble_spacer'])
+        await member.add_roles(cfg['no_type_role'], cfg['trouble_spacer'])
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
-            command='notyping',
+            command='notype',
             target=member
         ))
 
-    @notyping.error
-    async def notyping_error(self, ctx: commands.Context, error: commands.CommandError):
-        """Function executed when there was an error associated with notyping"""
+    @notype.error
+    async def notype_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with notype"""
 
         if isinstance(error, commands.MissingRole):
             return
 
-        await ctx.send(f'Error executing notyping:\n`{error}`', delete_after=10)
-    
+        await ctx.send(f'Error executing notype:\n`{error}`', delete_after=10)
+
+    @commands.command()
+    @commands.has_role(cfg['administration_spacer'].id)
+    async def oktype(self, ctx: commands.Context, member: discord.Member):
+        """Removes member No Type role to allow member to send text  messages"""
+
+        meta = {
+            'title': 'Moderation Command Executed',
+            'color': self.green
+        }
+
+        await member.remove_roles(cfg['no_type_role'], cfg['trouble_spacer'])
+        await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
+            meta=meta,
+            admin=ctx.author,
+            command='oktype',
+            target=member
+        ))
+
+    @oktype.error
+    async def oktype_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with oktype"""
+
+        if isinstance(error, commands.MissingRole):
+            return
+
+        await ctx.send(f'Error executing oktype:\n`{error}`', delete_after=10)
+
     @commands.command()
     @commands.has_role(cfg['administration_spacer'].id)
     async def ban(self, ctx: commands.Context, member: discord.Member):
