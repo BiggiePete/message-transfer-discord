@@ -1,5 +1,5 @@
 from discord.ext import commands
-from cfg import cfg
+from cfg import cfg, db
 
 
 class Dev(commands.Cog):
@@ -65,6 +65,24 @@ class Dev(commands.Cog):
             return
 
         await ctx.send(f'Error executing reloadext:\n`{error}`', delete_after=10)
+    
+    @commands.command()
+    @commands.has_role(cfg['owner_role'].id)
+    async def dbdelall(self, ctx: commands.Context, table: str):
+        """Delete all data in database table"""
+
+        db.delete_all(table)
+        await ctx.send(f'Successfully cleaned {table} data', delete_after=10)
+
+    @dbdelall.error
+    async def dbdelall_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with dbdelall"""
+
+        if isinstance(error, commands.CheckFailure):
+            print('HERE')
+            return
+
+        await ctx.send(f'Error executing dbdelall:\n`{error}`', delete_after=10)
 
 
 def setup(bot: commands.Bot):
