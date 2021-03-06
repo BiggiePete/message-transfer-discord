@@ -16,4 +16,4 @@ async def on_ready():
     print(f'Logged in as {bot.user}')
 
 if __name__ == '__main__':
-    bot.run('ODExNzE4MzM0NTgzOTMwOTcw.YC2Rmw.BLQuxqSiZ20mXLYdkf7r_hC9L_A')
+    bot.run('ODE3NzkxMzk1Nzg3NDQwMTU4.YEOplg.azVekNHpODwrVmZmSMatlldo6ds')
