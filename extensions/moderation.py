@@ -56,7 +56,7 @@ class Moderation(commands.Cog):
 
         meta = {
             'title': 'Moderation Command Executed',
-            'color': self.red
+            'color': self.black
         }
 
         await member.add_roles(cfg['no_typing_role'], cfg['trouble_spacer'])
@@ -75,6 +75,36 @@ class Moderation(commands.Cog):
             return
 
         await ctx.send(f'Error executing notyping:\n`{error}`', delete_after=10)
+    
+    @commands.command()
+    @commands.has_role(cfg['administration_spacer'].id)
+    async def ban(self, ctx: commands.Context, member: discord.Member):
+        """Add Ban role to member"""
+
+        meta = {
+            'title': 'Moderation Command Executed',
+            'color': self.black
+        }
+
+        # remove all roles from member
+        await member.edit(roles=[], reason='Banned')
+
+        await member.add_roles(cfg['banned_role'], cfg['trouble_spacer'])
+        await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
+            meta=meta,
+            admin=ctx.author,
+            command='ban',
+            target=member
+        ))
+
+    @ban.error
+    async def ban_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with ban"""
+
+        if isinstance(error, commands.MissingRole):
+            return
+
+        await ctx.send(f'Error executing ban:\n`{error}`', delete_after=10)
 
     @staticmethod
     async def make_moderation_embed(
