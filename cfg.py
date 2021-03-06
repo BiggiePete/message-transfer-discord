@@ -16,69 +16,16 @@ def setup_cfg():
 
     guild = bot.get_guild(817517239166566410)
 
-    # smiley = {
-    #     'guild': guild,
-    #     'owner_role': get(guild.roles, id=803002510922874980),
-
-    #     # Stats
-    #     'status_urls': [
-    #         'http://68.59.13.90:30120/players.json',
-    #         'http://68.59.13.90:30120/smileyrp_queue/count'
-    #     ],
-    #     'online_channel': bot.get_channel(804825065060302889),
-    #     'player_count_channel': bot.get_channel(804825835344494612),
-    #     'total_users_channel': bot.get_channel(804825997161005146),
-
-    #     # Registration
-    #     'whitelist_message_id': 812427095048192000,
-    #     'whitelisted_role': get(guild.roles, id=804942365718478928),
-    #     'general_role_spacer': get(guild.roles, id=816801261247922176),
-
-    #     # Applications
-    #     'new_applications_channel': bot.get_channel(816416264766881832),
-    #     'valid_app_types': {
-    #         'moderator': {
-    #             'review_channel': bot.get_channel(816410656257212416),
-    #             'reviewer_role': get(guild.roles, id=816458283019272212),
-    #             'role': get(guild.roles, id=803002510922874976),
-    #             'role_spacer': get(guild.roles, id=816797670139232276)
-    #         },
-    #         'police': {
-    #             'review_channel': bot.get_channel(816410712645566484),
-    #             'reviewer_role': get(guild.roles, id=816465523239550976),
-    #             'role': get(guild.roles, id=816387375218556959),
-    #             'role_spacer': get(guild.roles, id=816806694176161803)
-    #         },
-    #         'unban': {
-    #             'review_channel': bot.get_channel(816763576408342538),
-    #             'reviewer_role': get(guild.roles, id=816763356290744361),
-    #             'role': get(guild.roles, id=816763651956539414),
-    #             'role_spacer': get(guild.roles, id=816801869602619452)
-    #         }
-    #     },
-
-    #     # Logs
-    #     'log_message_channel': bot.get_channel(812408474511474709),
-    #     'log_join_leave_channel': bot.get_channel(812408531772375060),
-    #     'log_kick_ban_channel': bot.get_channel(812408406530326538),
-    #     'log_role_update_channel': bot.get_channel(817508873694478386),
-
-    #     # Emojis
-    #     'emojis': {
-    #         'yes': {
-    #             'id': 817497505847312404,
-    #             'full': '<:yes:817497505847312404>'
-    #         },
-    #         'no': {
-    #             'id': 817497411257368627,
-    #             'full': '<:no:817497411257368627>'
-    #         }
-    #     }
-    # }
-
-    arp = {
+    _ = {
         'guild': guild,
+
+        # Moderation
+        'moderation_channel': bot.get_channel(817841287884439583),
         'owner_role': get(guild.roles, id=817518188048023592),
+        'administration_spacer': get(guild.roles, id=817518590676434944),
+        'banned_role': get(guild.roles, id=817519224368136193),
+        'no_typing_role': get(guild.roles, id=817519315539853362),
+        'trouble_spacer': get(guild.roles, id=817519452409036800),
 
         # Stats
         'status_urls': [
@@ -136,4 +83,4 @@ def setup_cfg():
         }
     }
 
-    cfg.update(arp)
+    cfg.update(_)
