@@ -1,8 +1,13 @@
 import discord
 from discord.ext import commands
 from discord.utils import get
+from db import DB
 
+# Init DB
+db = DB()
+db.init()
 
+# Init Bot
 bot = commands.Bot(
     command_prefix='.', # f'<@!{811718334583930970}> ',
     activity=discord.Game(f'KEKW'),
