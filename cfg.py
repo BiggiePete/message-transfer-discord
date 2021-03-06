@@ -24,7 +24,7 @@ def setup_cfg():
         'owner_role': get(guild.roles, id=817518188048023592),
         'administration_spacer': get(guild.roles, id=817518590676434944),
         'banned_role': get(guild.roles, id=817519224368136193),
-        'no_typing_role': get(guild.roles, id=817519315539853362),
+        'no_type_role': get(guild.roles, id=817519315539853362),
         'trouble_spacer': get(guild.roles, id=817519452409036800),
 
         # Stats
