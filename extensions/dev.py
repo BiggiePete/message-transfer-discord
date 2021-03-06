@@ -79,7 +79,6 @@ class Dev(commands.Cog):
         """Function executed when there was an error associated with dbdelall"""
 
         if isinstance(error, commands.CheckFailure):
-            print('HERE')
             return
 
         await ctx.send(f'Error executing dbdelall:\n`{error}`', delete_after=10)

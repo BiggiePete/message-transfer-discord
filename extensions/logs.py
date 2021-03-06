@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 import discord
 from discord.ext import commands
-from cfg import cfg
+from cfg import cfg, db
 
 
 class Logs(commands.Cog):
@@ -202,6 +202,9 @@ class Logs(commands.Cog):
 
         await cfg['log_join_leave_channel'].send(embed=embed)
 
+        if not db.member_exists(member):
+            db.new_member(member)
+
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
         """Log when member leaves the guild"""
@@ -214,6 +217,7 @@ class Logs(commands.Cog):
         embed = await self.make_member_embed(meta, member)
 
         await cfg['log_join_leave_channel'].send(embed=embed)
+        db.reset_points(member)
 
         # check if remove was by kick or ban
         async for entry in cfg['guild'].audit_logs(limit=10):
