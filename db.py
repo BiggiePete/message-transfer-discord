@@ -41,9 +41,8 @@ class DB:
             member.discriminator,
             member.id,
             member.joined_at,
-            0
+            0,
         ))
-
         self.connection.commit()
     
     def member_exists(self, member: discord.Member):
@@ -51,7 +50,15 @@ class DB:
 
         self.c.execute('''
             SELECT 1 from members WHERE discord_id=?
-        ''', (member.id))
+        ''', (member.id,))
 
         if not self.c.fetchone(): return False
         return True
+    
+    def add_points(self, member: discord.Member, points: int):
+        """Add points to discord member"""
+
+        self.c.execute('''
+            UPDATE members SET points=points+? WHERE discord_id=?
+        ''', (points, member.id,))
+        self.connection.commit()
