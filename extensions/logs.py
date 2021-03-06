@@ -8,6 +8,10 @@ from cfg import cfg
 class Logs(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.red = discord.Color.from_rgb(255, 0, 0)
+        self.orange = discord.Color.from_rgb(255, 150, 0)
+        self.yellow = discord.Color.from_rgb(255, 250, 0)
+        self.green = discord.Color.from_rgb(0, 255, 30)
 
 
     """
@@ -19,7 +23,7 @@ class Logs(commands.Cog):
 
         meta = {
             'title': 'Deleted Message',
-            'color': discord.Color.from_rgb(255, 0, 0),
+            'color': self.red,
             'm_name': 'Message'
         }
 
@@ -58,7 +62,7 @@ class Logs(commands.Cog):
 
         meta = {
             'title': 'Edited Message',
-            'color': discord.Color.from_rgb(255, 250, 0),
+            'color': self.yellow,
             'm_name': 'Old Message'
         }
 
@@ -191,7 +195,7 @@ class Logs(commands.Cog):
 
         meta = {
             'title': 'Member Join',
-            'color': discord.Color.from_rgb(0, 255, 30)
+            'color': self.green
         }
 
         embed = await self.make_member_embed(meta, member)
@@ -204,7 +208,7 @@ class Logs(commands.Cog):
 
         meta = {
             'title': 'Member Remove',
-            'color': discord.Color.from_rgb(255, 0, 0)
+            'color': self.red
         }
 
         embed = await self.make_member_embed(meta, member)
@@ -216,7 +220,7 @@ class Logs(commands.Cog):
             if entry.action == discord.AuditLogAction.kick and member.id == entry.target.id:
                 meta = {
                     'title': 'Member Kicked',
-                    'color': discord.Color.from_rgb(255, 150, 0)
+                    'color': self.orange
                 }
                 await cfg['log_kick_ban_channel'].send(embed=await self.make_kick_ban_embed(
                     meta=meta,
@@ -227,7 +231,7 @@ class Logs(commands.Cog):
             elif entry.action == discord.AuditLogAction.ban and member.id == entry.target.id:
                 meta = {
                     'title': 'Member Banned',
-                    'color': discord.Color.from_rgb(255, 0, 0)
+                    'color': self.red
                 }
                 await cfg['log_kick_ban_channel'].send(embed=await self.make_kick_ban_embed(
                     meta=meta,
@@ -281,6 +285,59 @@ class Logs(commands.Cog):
 
         return embed
 
+
+    """
+    Role Update
+    """
+    @commands.Cog.listener()
+    async def on_member_update(self, before: discord.Member, after: discord.Member):
+        """Log when member's roles get updated"""
+
+        if len(before.roles) != len(after.roles):
+            meta = {}
+
+            # get admin who updated roles
+            async for entry in cfg['guild'].audit_logs(limit=10):
+                if entry.action == discord.AuditLogAction.member_role_update \
+                and before.id == entry.target.id:
+                    admin = entry.user
+                    break
+
+            role_added = list(set(after.roles) - set(before.roles))
+            if role_added:
+                meta['title'] = 'Member Role Added'
+                meta['color'] = self.green
+                embed = await self.make_role_embed(meta, before, role_added[0], admin)
+            else:
+                role_removed = list(set(before.roles) - set(after.roles))
+                meta['title'] = 'Member Role Removed'
+                meta['color'] = self.red
+                embed = await self.make_role_embed(meta, before, role_removed[0], admin)
+
+            await cfg['log_role_update_channel'].send(embed=embed)
+
+    @staticmethod
+    async def make_role_embed(
+        meta: dict,
+        member: discord.Member,
+        role: discord.Role,
+        admin: discord.Member
+    ) -> discord.Embed:
+        """Make embed for member role update"""
+
+        embed = discord.Embed(
+            title=meta.get('title'),
+            color=meta.get('color'),
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_thumbnail(url=member.avatar_url)
+        embed.add_field(name='Member', value=member.mention, inline=True)
+        embed.add_field(name='ID', value=member.id, inline=True)
+        embed.add_field(name='Role', value=role.mention, inline=False)
+        embed.add_field(name='Admin', value=admin.mention, inline=True)
+        embed.add_field(name='ID', value=admin.id, inline=True)
+
+        return embed
 
 def setup(bot: commands.Bot):
     bot.add_cog(Logs(bot))
