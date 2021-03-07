@@ -104,29 +104,27 @@ class Applications(commands.Cog):
         payload.member != self.bot.user:
             applicant = get(self.bot.get_all_members(), id=applicant_id)
             if payload.emoji.id == cfg['emojis']['yes']['id']: # app approved
-                try:
-                    # for unban app, we actually remove banned role
-                    if app_type == 'unban':
-                        await applicant.remove_roles(
-                            cfg['valid_app_types'][app_type]['role'],
-                            cfg['valid_app_types'][app_type]['role_spacer']
-                        )
-                    else:
-                        await applicant.add_roles(
-                            cfg['valid_app_types'][app_type]['role'],
-                            cfg['valid_app_types'][app_type]['role_spacer']
-                        )
-                    await self.cleanup_app(message, applicant, True)
-                except Exception as e:
-                    print(f'Error adding applicant role to member: {e}')
+                # for unban app, we actually remove banned role
+                if app_type == 'unban':
+                    await applicant.remove_roles(
+                        cfg['valid_app_types'][app_type]['role'],
+                        cfg['valid_app_types'][app_type]['role_spacer']
+                    )
+                else:
+                    await applicant.add_roles(
+                        cfg['valid_app_types'][app_type]['role'],
+                        cfg['valid_app_types'][app_type]['role_spacer']
+                    )
+                await self.cleanup_app(message, applicant, True, payload.member)
             elif payload.emoji.id == cfg['emojis']['no']['id']: # app denied
-                await self.cleanup_app(message, applicant, False)
+                await self.cleanup_app(message, applicant, False, payload.member)
 
     @staticmethod
     async def cleanup_app(
         message: discord.Message,
         applicant: discord.Member,
-        decision: bool
+        decision: bool,
+        reviewer: discord.Member
     ):
         """Cleanup application after reviewer has made a decision"""
 
@@ -144,7 +142,10 @@ class Applications(commands.Cog):
         await message.delete()
 
         # log app
-        archive = await cfg['log_closed_apps_channel'].send(message.content)
+        archive = await cfg['log_closed_apps_channel'].send(
+            f'{message.content}\n'
+            f'**Reviewer**: {reviewer.mention}'
+        )
 
         if decision == 'APPROVED':
             await archive.add_reaction(cfg['emojis']['yes']['full'])

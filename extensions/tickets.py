@@ -65,6 +65,13 @@ class Tickets(commands.Cog):
     async def ticket_error(self, ctx: commands.Context, error: commands.CommandError):
         """Function executed when there was an error associated with ticket"""
 
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(
+                f'{ctx.author.mention}, you must supply a message with your ticket.',
+                delete_after=10
+            )
+            return
+
         await ctx.send(f'Error executing app:\n`{error}`', delete_after=10)
 
     @commands.Cog.listener()
@@ -85,13 +92,14 @@ class Tickets(commands.Cog):
         payload.member != self.bot.user:
             applicant = get(self.bot.get_all_members(), id=applicant_id)
             if payload.emoji.id == cfg['emojis']['yes']['id']: # close ticket
-                try:
-                    await self.cleanup_app(message, applicant)
-                except Exception as e:
-                    print(f'Error adding applicant role to member: {e}')
+                await self.cleanup_ticket(message, applicant, payload.member)
 
     @staticmethod
-    async def cleanup_app(message: discord.Message, applicant: discord.Member):
+    async def cleanup_ticket(
+        message: discord.Message,
+        applicant: discord.Member,
+        reviewer: discord.Member
+    ):
         """Cleanup ticket after reviewer has closed ticket"""
 
         message_data = message.content.split('\n')
@@ -105,7 +113,10 @@ class Tickets(commands.Cog):
         await message.delete()
 
         # log ticket
-        archive = await cfg['log_closed_tickets_channel'].send(message.content)
+        archive = await cfg['log_closed_tickets_channel'].send(
+            f'{message.content}\n'
+            f'**Reviewer**: {reviewer.mention}'
+        )
         await archive.add_reaction(cfg['emojis']['yes']['full'])
 
 
