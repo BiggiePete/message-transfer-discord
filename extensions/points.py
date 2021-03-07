@@ -16,6 +16,19 @@ class Points(commands.Cog):
 
         db.add_points(message.author, 1)
 
+    @commands.command()
+    async def points(self, ctx: commands.Context):
+        """Report members total points"""
+
+        points = db.get_member(ctx.author)['points']
+        await ctx.send(f'{ctx.author.mention}, you have a total of {points} points.')
+
+    @points.error
+    async def points_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with points"""
+
+        await ctx.send(f'Error executing points:\n`{error}`', delete_after=10)
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(Points(bot))
