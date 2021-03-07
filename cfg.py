@@ -83,6 +83,11 @@ def setup_cfg():
         'log_closed_apps_channel': bot.get_channel(817970871037591563),
         'log_closed_tickets_channel': bot.get_channel(817970890426810399),
 
+        # Points
+        'valid_points_categories_ids': [
+            get(guild.categories, id=817522732358565898)
+        ],
+
         # Emojis
         'emojis': {
             'yes': {
