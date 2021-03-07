@@ -62,7 +62,7 @@ class DB:
             UPDATE members SET points=points+? WHERE discord_id=?
         ''', (points, member.id,))
         self.connection.commit()
-    
+
     def reset_points(self, member: discord.Member):
         """Reset points of discord member"""
 
@@ -70,3 +70,22 @@ class DB:
             UPDATE members SET points=0 WHERE discord_id=?
         ''',  (member.id,))
         self.connection.commit()
+
+    def get_member(self, member: discord.Member) -> dict:
+        """Return member from db referenced from discord.Member"""
+
+        self.c.execute('''
+            SELECT * FROM members WHERE discord_id=?
+        ''', (member.id,))
+
+        member = self.c.fetchone()
+        member = {
+            'id': member[0],
+            'name': member[1],
+            'discriminator': member[2],
+            'discord_id': member[3],
+            'joined_guild': member[4],
+            'points': member[5]
+        }
+
+        return member
