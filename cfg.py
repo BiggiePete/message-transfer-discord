@@ -9,7 +9,7 @@ db.init()
 
 # Init Bot
 bot = commands.Bot(
-    command_prefix='.', # f'<@!{811718334583930970}> ',
+    command_prefix='.',
     activity=discord.Game(f'KEKW'),
     intents=discord.Intents().all()
 )

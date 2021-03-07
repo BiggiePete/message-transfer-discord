@@ -75,7 +75,6 @@ class Applications(commands.Cog):
     async def app_error(self, ctx: commands.Context, error: commands.CommandError):
         """Function executed when there was an error associated with app"""
 
-        await ctx.message.delete()
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(
                 f'{ctx.author.mention}, you must supply an application type. '
@@ -101,7 +100,8 @@ class Applications(commands.Cog):
         applicant_id = int(message.content.split('\n')[0].split('@')[-1][:-1])
 
         # check if reaction added was from proper reviewer
-        if cfg['valid_app_types'][app_type]['reviewer_role'] in payload.member.roles:
+        if cfg['valid_app_types'][app_type]['reviewer_role'] in payload.member.roles and \
+        payload.member != self.bot.user:
             applicant = get(self.bot.get_all_members(), id=applicant_id)
             if payload.emoji.id == cfg['emojis']['yes']['id']: # app approved
                 try:
@@ -144,7 +144,7 @@ class Applications(commands.Cog):
         await message.delete()
 
         # log app
-        archive = await cfg['log_closed_apps_channel'].send(message)
+        archive = await cfg['log_closed_apps_channel'].send(message.content)
 
         if decision == 'APPROVED':
             await archive.add_reaction(cfg['emojis']['yes']['full'])
