@@ -69,11 +69,19 @@ def setup_cfg():
             }
         },
 
+        # Tickets
+        'new_ticket_channel': bot.get_channel(817524888512102450),
+        'high_priority_channel': bot.get_channel(817949849126305807),
+        'low_priority_channel': bot.get_channel(817949872907878472),
+        'donator_spacer': get(guild.roles, id=817518812723019788),
+
         # Logs
         'log_message_channel': bot.get_channel(817526349290930246),
         'log_join_leave_channel': bot.get_channel(817526320011018291),
         'log_kick_ban_channel': bot.get_channel(817526296108072970),
         'log_role_update_channel': bot.get_channel(817526376856289320),
+        'log_closed_apps_channel': bot.get_channel(817970871037591563),
+        'log_closed_tickets_channel': bot.get_channel(817970890426810399),
 
         # Emojis
         'emojis': {
