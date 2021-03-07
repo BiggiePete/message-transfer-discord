@@ -18,7 +18,8 @@ class DB:
                 discord_id INTEGER,
                 joined_guild DATE NOT NULL,
                 points INTEGER NOT NULL,
-                lifetime_points INTEGER NOT NULL
+                lifetime_points INTEGER NOT NULL,
+                warn_level INTEGER NOT NULL
             );
         ''')
         self.connection.commit()
@@ -36,13 +37,15 @@ class DB:
 
         self.c.execute('''
             INSERT INTO members
-            (name, discriminator, discord_id, joined_guild, points, lifetime_points)
-            VALUES (?, ?, ?, ?, ?, ?);
+            (name, discriminator, discord_id, joined_guild, points,
+                lifetime_points, warn_level)
+            VALUES (?, ?, ?, ?, ?, ?, ?);
         ''', (
             member.name,
             member.discriminator,
             member.id,
             member.joined_at,
+            0,
             0,
             0
         ))
@@ -90,7 +93,8 @@ class DB:
             'discord_id': member[3],
             'joined_guild': member[4],
             'points': member[5],
-            'lifetime_points': member[6]
+            'lifetime_points': member[6],
+            'warn_level': member[7]
         }
 
         return member
@@ -103,3 +107,19 @@ class DB:
         ''')
 
         return self.c.fetchall()
+
+    def add_warn(self, member: discord.Member):
+        """Add warning to member"""
+
+        self.c.execute('''
+            UPDATE members SET warn_level=warn_level+1 WHERE discord_id=?;
+        ''', (member.id,))
+        self.connection.commit()
+
+    def reset_warn(self, member: discord.Member):
+        """Reset warning level of member"""
+
+        self.c.execute('''
+            UPDATE members SET warn_level=0 WHERE discord_id=?;
+        ''', (member.id,))
+        self.connection.commit()
