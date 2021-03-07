@@ -108,13 +108,15 @@ class DB:
 
         return self.c.fetchall()
 
-    def add_warn(self, member: discord.Member):
-        """Add warning to member"""
+    def add_warn(self, member: discord.Member) -> int:
+        """Add warning to member and return new warning level"""
 
         self.c.execute('''
             UPDATE members SET warn_level=warn_level+1 WHERE discord_id=?;
         ''', (member.id,))
         self.connection.commit()
+
+        return self.get_member(member)['warn_level']
 
     def reset_warn(self, member: discord.Member):
         """Reset warning level of member"""

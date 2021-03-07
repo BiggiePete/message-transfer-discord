@@ -116,10 +116,17 @@ class Moderation(commands.Cog):
             'color': self.black
         }
 
-        # remove all roles from member
+        # remove all roles from member and apply ban roles
         await member.edit(roles=[], reason='Banned')
-
         await member.add_roles(cfg['banned_role'], cfg['trouble_spacer'])
+
+        # alert user in DM
+        await member.send(
+            f'**ParadiseRP Ban**\nHi, {member.mention}.\n'
+            f'You have been banned. If you wish, you may make a ban application '
+            f'in the *new-applications* channel.'
+        )
+
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
@@ -176,7 +183,19 @@ class Moderation(commands.Cog):
             'color': self.orange
         }
 
-        db.add_warn(member)
+        warn_level = db.add_warn(member)
+
+        # send message to target
+        message = ' '.join(message) if message else 'N/A'
+        await member.send(
+            f'**ParadiseRP Warning**\nHi, {member.mention}.\n'
+            f'You have been issued a warning by an administrator for the '
+            f'following reason:\n{message}'
+        )
+
+        # check if warning level has passed 10, if so, apply .ban command
+        if warn_level >= 10:
+            ctx.send(f'.ban {member.mention}')
 
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
