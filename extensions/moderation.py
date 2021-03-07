@@ -171,8 +171,6 @@ class Moderation(commands.Cog):
     async def warn(self, ctx: commands.Context, member: discord.Member, *message: str):
         """Send warn to member"""
 
-        print(message, type(message))
-        print(' '.join(message), type(' '.join(message)))
         meta = {
             'title': 'Moderation Command Executed',
             'color': self.orange
@@ -196,6 +194,35 @@ class Moderation(commands.Cog):
             return
 
         await ctx.send(f'Error executing warn:\n`{error}`', delete_after=10)
+
+    @commands.command()
+    @commands.has_role(cfg['administration_spacer'].id)
+    async def resetwarn(self, ctx: commands.Context, member: discord.Member):
+        """Reset warning level of member"""
+
+        meta = {
+            'title': 'Moderation Command Executed',
+            'color': self.green
+        }
+
+        db.reset_warn(member)
+
+        await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
+            meta=meta,
+            admin=ctx.author,
+            command='resetwarn',
+            target=member
+        ))
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
+
+    @resetwarn.error
+    async def resetwarn_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with resetwarn"""
+
+        if isinstance(error, commands.MissingRole):
+            return
+
+        await ctx.send(f'Error executing resetwarn:\n`{error}`', delete_after=10)
 
     @staticmethod
     async def make_moderation_embed(
