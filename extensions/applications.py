@@ -73,7 +73,7 @@ class Applications(commands.Cog):
 
     @app.error
     async def app_error(self, ctx: commands.Context, error: commands.CommandError):
-        """Function executed when there was an error associated with reloadext"""
+        """Function executed when there was an error associated with app"""
 
         await ctx.message.delete()
         if isinstance(error, commands.MissingRequiredArgument):
@@ -142,6 +142,14 @@ class Applications(commands.Cog):
             f'has been processed.\nYour application decision is: **{decision}**'
         )
         await message.delete()
+
+        # log app
+        archive = await cfg['log_closed_apps_channel'].send(message)
+
+        if decision == 'APPROVED':
+            await archive.add_reaction(cfg['emojis']['yes']['full'])
+        else:
+            await archive.add_reaction(cfg['emojis']['no']['full'])
 
 
 def setup(bot: commands.Bot):
