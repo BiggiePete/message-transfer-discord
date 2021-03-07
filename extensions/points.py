@@ -1,3 +1,4 @@
+import datetime
 import discord
 from discord.ext import commands
 from cfg import db, cfg
@@ -5,6 +6,7 @@ from cfg import db, cfg
 class Points(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self.green = discord.Color.from_rgb(0, 255, 30)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -18,7 +20,7 @@ class Points(commands.Cog):
 
     @commands.command()
     async def points(self, ctx: commands.Context):
-        """Report members total points"""
+        """Report member's total points"""
 
         if ctx.channel.category not in cfg['valid_points_categories_ids']:
             return
@@ -31,6 +33,39 @@ class Points(commands.Cog):
         """Function executed when there was an error associated with points"""
 
         await ctx.send(f'Error executing points:\n`{error}`', delete_after=10)
+
+    @commands.command()
+    async def toppoints(self, ctx: commands.Context):
+        """Embed the top 10 members sorted by points"""
+
+        if ctx.channel.category not in cfg['valid_points_categories_ids']:
+            return
+
+        top_members = db.get_top_points()
+        top_member = self.bot.get_user(top_members[0][0])
+
+        embed = discord.Embed(
+            title='Top Members',
+            color=self.green,
+            timestamp=datetime.datetime.utcnow()
+        )
+        embed.set_thumbnail(url=top_member.avatar_url)
+
+        for i, member in enumerate(top_members):
+            m = self.bot.get_user(member[0])
+            embed.add_field(
+                name=f'Position {i+1}',
+                value=f'**[{member[1]}]** {m.mention}',
+                inline=False
+            )
+
+        await ctx.send(embed=embed)
+
+    @toppoints.error
+    async def toppoints_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with toppoints"""
+
+        await ctx.send(f'Error executing toppoints:\n`{error}`', delete_after=10)
 
 
 def setup(bot: commands.Bot):
