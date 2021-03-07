@@ -195,7 +195,7 @@ class Moderation(commands.Cog):
 
         # check if warning level has passed 10, if so, apply .ban command
         if warn_level >= 10:
-            ctx.send(f'.ban {member.mention}')
+            await self.ban(ctx, member)
 
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
