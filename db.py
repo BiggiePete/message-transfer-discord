@@ -17,7 +17,8 @@ class DB:
                 discriminator TEXT NOT NULL,
                 discord_id INTEGER,
                 joined_guild DATE NOT NULL,
-                points INTEGER NOT NULL
+                points INTEGER NOT NULL,
+                lifetime_points INTEGER NOT NULL
             );
         ''')
         self.connection.commit()
@@ -34,14 +35,16 @@ class DB:
         """Create new entry in members table of member"""
 
         self.c.execute('''
-            INSERT INTO members (name, discriminator, discord_id, joined_guild, points)
-            VALUES (?, ?, ?, ?, ?);
+            INSERT INTO members
+            (name, discriminator, discord_id, joined_guild, points, lifetime_points)
+            VALUES (?, ?, ?, ?, ?, ?);
         ''', (
             member.name,
             member.discriminator,
             member.id,
             member.joined_at,
             0,
+            0
         ))
         self.connection.commit()
 
@@ -49,7 +52,7 @@ class DB:
         """Return if member exists in db referenced from discord.Member"""
 
         self.c.execute('''
-            SELECT 1 from members WHERE discord_id=?
+            SELECT 1 from members WHERE discord_id=?;
         ''', (member.id,))
 
         if not self.c.fetchone(): return False
@@ -59,15 +62,16 @@ class DB:
         """Add points to discord member"""
 
         self.c.execute('''
-            UPDATE members SET points=points+? WHERE discord_id=?
-        ''', (points, member.id,))
+            UPDATE members SET points=points+?, lifetime_points=lifetime_points+?
+            WHERE discord_id=?;
+        ''', (points, points, member.id,))
         self.connection.commit()
 
     def reset_points(self, member: discord.Member):
         """Reset points of discord member"""
 
         self.c.execute('''
-            UPDATE members SET points=0 WHERE discord_id=?
+            UPDATE members SET points=0 WHERE discord_id=?;
         ''',  (member.id,))
         self.connection.commit()
 
@@ -75,7 +79,7 @@ class DB:
         """Return member from db referenced from discord.Member"""
 
         self.c.execute('''
-            SELECT * FROM members WHERE discord_id=?
+            SELECT * FROM members WHERE discord_id=?;
         ''', (member.id,))
 
         member = self.c.fetchone()
@@ -85,7 +89,17 @@ class DB:
             'discriminator': member[2],
             'discord_id': member[3],
             'joined_guild': member[4],
-            'points': member[5]
+            'points': member[5],
+            'lifetime_points': member[6]
         }
 
         return member
+
+    def get_top_points(self) -> list:
+        """Return a sorted list of the top 10 members sorted by points"""
+
+        self.c.execute('''
+            SELECT discord_id, points FROM members ORDER BY points DESC LIMIT 10;
+        ''')
+
+        return self.c.fetchall()
