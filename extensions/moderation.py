@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 import discord
 from discord.ext import commands
-from cfg import cfg
+from cfg import cfg, db
 
 
 class Moderation(commands.Cog):
@@ -133,6 +133,34 @@ class Moderation(commands.Cog):
             return
 
         await ctx.send(f'Error executing ban:\n`{error}`', delete_after=10)
+
+    @commands.command()
+    @commands.has_role(cfg['owner_role'].id)
+    async def resetpoints(self, ctx: commands.Context, member: discord.Member):
+        """Reset points of user"""
+
+        meta = {
+            'title': 'Moderation Command Executed',
+            'color': self.red
+        }
+
+        db.reset_points(member)
+
+        await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
+            meta=meta,
+            admin=ctx.author,
+            command='resetpoints',
+            target=member
+        ))
+
+    @resetpoints.error
+    async def resetpoints_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with resetpoints"""
+
+        if isinstance(error, commands.MissingRole):
+            return
+
+        await ctx.send(f'Error executing resetpoints:\n`{error}`', delete_after=10)
 
     @staticmethod
     async def make_moderation_embed(
