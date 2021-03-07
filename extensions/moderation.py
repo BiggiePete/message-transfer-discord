@@ -146,6 +146,7 @@ class Moderation(commands.Cog):
 
         db.reset_points(member)
 
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
