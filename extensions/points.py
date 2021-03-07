@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from cfg import db
+from cfg import db, cfg
 
 class Points(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -19,6 +19,9 @@ class Points(commands.Cog):
     @commands.command()
     async def points(self, ctx: commands.Context):
         """Report members total points"""
+
+        if ctx.channel.category not in cfg['valid_points_categories_ids']:
+            return
 
         points = db.get_member(ctx.author)['points']
         await ctx.send(f'{ctx.author.mention}, you have a total of {points} points.')
