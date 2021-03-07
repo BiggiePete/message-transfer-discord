@@ -2,7 +2,7 @@ import datetime
 import discord
 from discord.ext import commands
 from discord.utils import get
-from cfg import cfg
+from cfg import cfg, db
 
 
 class Applications(commands.Cog):
@@ -110,6 +110,7 @@ class Applications(commands.Cog):
                         cfg['valid_app_types'][app_type]['role'],
                         cfg['valid_app_types'][app_type]['role_spacer']
                     )
+                    db.reset_warn(applicant)
                 else:
                     await applicant.add_roles(
                         cfg['valid_app_types'][app_type]['role'],
