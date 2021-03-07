@@ -13,7 +13,7 @@ class Dev(commands.Cog):
 
         try:
             self.bot.load_extension(f'extensions.{extension}')
-            await ctx.send(f'Successfully loaded extension `{extension}`', delete_after=10)
+            await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
         except Exception as e:
             await ctx.send(f'Error loading extension:\n`{e}`', delete_after=10)
 
@@ -33,7 +33,7 @@ class Dev(commands.Cog):
 
         try:
             self.bot.unload_extension(f'extensions.{extension}')
-            await ctx.send(f'Successfully unloaded extension `{extension}`', delete_after=10)
+            await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
         except Exception as e:
             await ctx.send(f'Error unloadeding extension:\n`{e}`', delete_after=10)
 
@@ -53,7 +53,7 @@ class Dev(commands.Cog):
 
         try:
             self.bot.reload_extension(f'extensions.{extension}')
-            await ctx.send(f'Successfully reloaded extension `{extension}`', delete_after=10)
+            await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
         except Exception as e:
             await ctx.send(f'Error reloading extension:\n`{e}`', delete_after=10)
 
@@ -72,7 +72,7 @@ class Dev(commands.Cog):
         """Delete all data in database table"""
 
         db.delete_all(table)
-        await ctx.send(f'Successfully cleaned {table} data', delete_after=10)
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
 
     @dbdelall.error
     async def dbdelall_error(self, ctx: commands.Context, error: commands.CommandError):

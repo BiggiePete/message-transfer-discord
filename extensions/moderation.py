@@ -67,6 +67,7 @@ class Moderation(commands.Cog):
             command='notype',
             target=member
         ))
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
 
     @notype.error
     async def notype_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -94,6 +95,7 @@ class Moderation(commands.Cog):
             command='oktype',
             target=member
         ))
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
 
     @oktype.error
     async def oktype_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -124,6 +126,7 @@ class Moderation(commands.Cog):
             command='ban',
             target=member
         ))
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
 
     @ban.error
     async def ban_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -153,6 +156,7 @@ class Moderation(commands.Cog):
             command='resetpoints',
             target=member
         ))
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
 
     @resetpoints.error
     async def resetpoints_error(self, ctx: commands.Context, error: commands.CommandError):
