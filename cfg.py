@@ -26,6 +26,7 @@ def setup_cfg():
 
         # Moderation
         'moderation_channel': bot.get_channel(817841287884439583),
+        'admin_roster_channel': bot.get_channel(817526151978418176),
         'owner_role': get(guild.roles, id=817518188048023592),
         'administration_spacer': get(guild.roles, id=817518590676434944),
         'banned_role': get(guild.roles, id=817519224368136193),

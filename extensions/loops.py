@@ -16,10 +16,11 @@ class Loops(commands.Cog):
 
         # start tasks
         self.get_status.start()
+        self.admin_roster.start()
 
     @tasks.loop(minutes=1)
     async def get_status(self):
-        """update status channel names"""
+        """Update status channel names"""
 
         async with aiohttp.ClientSession() as session:
             coroutines = [self.request(session, url) for url in cfg['status_urls']]
@@ -58,9 +59,35 @@ class Loops(commands.Cog):
             self.queue_count = queue_count
             self.total_users = cfg['guild'].member_count
 
+    @tasks.loop(minutes=5)
+    async def admin_roster(self):
+        """Update admin roster on loop based off discord status"""
+
+        # get all members with administration_spacer role
+        admins = cfg['administration_spacer'].members
+
+        # loop through all admins and make dict with key as role and value as members
+        roles = {}
+        for admin in admins:
+            if admin.top_role not in roles:
+                roles[admin.top_role] = []
+            roles[admin.top_role].append(admin)
+
+        # make formatted message
+        message = ''
+        for role, members in roles.items():
+            message += f'{role.mention}\n'
+            for m in members:
+                message += f'{m.mention}, '
+            message = message[:-2]
+            message += '\n\n'
+
+        await cfg['admin_roster_channel'].purge()
+        await cfg['admin_roster_channel'].send(message)
+
     @staticmethod
     async def request(session: aiohttp.ClientSession, url: str):
-        """preform asynchronous http request"""
+        """Preform asynchronous http request"""
 
         try:
             async with session.get(url, timeout=2) as response:
@@ -73,5 +100,4 @@ class Loops(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    # bot.add_cog(Loops(bot))
-    return
+    bot.add_cog(Loops(bot))
