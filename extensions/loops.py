@@ -78,7 +78,7 @@ class Loops(commands.Cog):
         for role, members in roles.items():
             message += f'{role.mention}\n'
             for m in members:
-                message += f'{m.mention}, '
+                message += f'{m.name}#{m.discriminator}, '
             message = message[:-2]
             message += '\n\n'
 
