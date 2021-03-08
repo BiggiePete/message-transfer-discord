@@ -36,7 +36,7 @@ class Moderation(commands.Cog):
             await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
                 meta=meta,
                 admin=ctx.author,
-                command='purge'
+                command=ctx.message.clean_content
             ))
 
     @purge.error
@@ -64,7 +64,7 @@ class Moderation(commands.Cog):
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
-            command='notype',
+            command=ctx.message.clean_content,
             target=member
         ))
         await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
@@ -92,7 +92,7 @@ class Moderation(commands.Cog):
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
-            command='oktype',
+            command=ctx.message.clean_content,
             target=member
         ))
         await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
@@ -130,7 +130,7 @@ class Moderation(commands.Cog):
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
-            command='ban',
+            command=ctx.message.clean_content,
             target=member
         ))
         await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
@@ -159,7 +159,7 @@ class Moderation(commands.Cog):
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
-            command='resetpoints',
+            command=ctx.message.clean_content,
             target=member
         ))
         await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
@@ -200,7 +200,7 @@ class Moderation(commands.Cog):
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
-            command='warn',
+            command=ctx.message.clean_content,
             target=member
         ))
         await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
@@ -229,7 +229,7 @@ class Moderation(commands.Cog):
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,
             admin=ctx.author,
-            command='resetwarn',
+            command=ctx.message.clean_content,
             target=member
         ))
         await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
