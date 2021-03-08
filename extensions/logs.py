@@ -28,6 +28,10 @@ class Logs(commands.Cog):
         }
 
         if payload.cached_message:
+            # ignore if message is from bot
+            if payload.cached_message.author == self.bot.user:
+                return
+
             message, attachment_url = await self.make_message(payload.cached_message)            
 
             embed = await self.make_message_embed(

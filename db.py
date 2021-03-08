@@ -7,6 +7,11 @@ class DB:
         self.connection = sqlite3.connect('discord.db')
         self.c = self.connection.cursor()
 
+        self.fields = '''
+            name, discriminator, discord_id, joined_guild, points,
+            lifetime_points, warn_level, lifetime_warns
+        '''
+
     def init(self):
         """"Make tables for db"""
 
@@ -19,7 +24,8 @@ class DB:
                 joined_guild DATE NOT NULL,
                 points INTEGER NOT NULL,
                 lifetime_points INTEGER NOT NULL,
-                warn_level INTEGER NOT NULL
+                warn_level INTEGER NOT NULL,
+                lifetime_warns INTEGER NOT NULL
             );
         ''')
         self.connection.commit()
@@ -35,16 +41,14 @@ class DB:
     def new_member(self, member: discord.Member):
         """Create new entry in members table of member"""
 
-        self.c.execute('''
-            INSERT INTO members
-            (name, discriminator, discord_id, joined_guild, points,
-                lifetime_points, warn_level)
-            VALUES (?, ?, ?, ?, ?, ?, ?);
+        self.c.execute(f'''
+            INSERT INTO members ({self.fields}) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         ''', (
             member.name,
             member.discriminator,
             member.id,
             member.joined_at,
+            0,
             0,
             0,
             0
@@ -81,20 +85,21 @@ class DB:
     def get_member(self, member: discord.Member) -> dict:
         """Return member from db referenced from discord.Member"""
 
-        self.c.execute('''
-            SELECT * FROM members WHERE discord_id=?;
+        self.c.execute(f'''
+            SELECT {self.fields} FROM members WHERE discord_id=?;
         ''', (member.id,))
 
         member = self.c.fetchone()
         member = {
             'id': member[0],
-            'name': member[1],
-            'discriminator': member[2],
-            'discord_id': member[3],
-            'joined_guild': member[4],
-            'points': member[5],
-            'lifetime_points': member[6],
-            'warn_level': member[7]
+            'name': member[0],
+            'discriminator': member[1],
+            'discord_id': member[2],
+            'joined_guild': member[3],
+            'points': member[4],
+            'lifetime_points': member[5],
+            'warn_level': member[6],
+            'lifetime_warn': member[7]
         }
 
         return member
@@ -112,7 +117,8 @@ class DB:
         """Add warning to member and return new warning level"""
 
         self.c.execute('''
-            UPDATE members SET warn_level=warn_level+1 WHERE discord_id=?;
+            UPDATE members SET warn_level=warn_level+1, lifetime_warns=lifetime_warns+1
+            WHERE discord_id=?;
         ''', (member.id,))
         self.connection.commit()
 
