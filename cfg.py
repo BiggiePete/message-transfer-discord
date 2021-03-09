@@ -43,7 +43,7 @@ def setup_cfg():
         'total_users_channel': bot.get_channel(817524228038328331),
 
         # Registration
-        'whitelist_message_id': 817794617742590005,
+        'whitelist_message_id': 818985319554744380,
         'whitelisted_role': get(guild.roles, id=817519095436017734),
         'general_role_spacer': get(guild.roles, id=817519199693176842),
 
@@ -74,7 +74,7 @@ def setup_cfg():
         'new_ticket_channel': bot.get_channel(817524888512102450),
         'high_priority_channel': bot.get_channel(817949849126305807),
         'low_priority_channel': bot.get_channel(817949872907878472),
-        'donator_spacer': get(guild.roles, id=817518812723019788),
+        'vip_spacer': get(guild.roles, id=817518812723019788),
 
         # Logs
         'log_message_channel': bot.get_channel(817526349290930246),

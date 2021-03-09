@@ -45,7 +45,7 @@ class Tickets(commands.Cog):
         await ctx.message.delete()
 
         # get proper channel if donator
-        if cfg['donator_spacer'] in ctx.author.roles:
+        if cfg['vip_spacer'] in ctx.author.roles:
             channel = cfg['high_priority_channel']
         else:
             channel = cfg['low_priority_channel']
