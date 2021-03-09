@@ -65,23 +65,6 @@ class Dev(commands.Cog):
             return
 
         await ctx.send(f'Error executing reloadext:\n`{error}`', delete_after=10)
-    
-    @commands.command()
-    @commands.has_role(cfg['owner_role'].id)
-    async def dbdelall(self, ctx: commands.Context, table: str):
-        """Delete all data in database table"""
-
-        db.delete_all(table)
-        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
-
-    @dbdelall.error
-    async def dbdelall_error(self, ctx: commands.Context, error: commands.CommandError):
-        """Function executed when there was an error associated with dbdelall"""
-
-        if isinstance(error, commands.CheckFailure):
-            return
-
-        await ctx.send(f'Error executing dbdelall:\n`{error}`', delete_after=10)
 
 
 def setup(bot: commands.Bot):
