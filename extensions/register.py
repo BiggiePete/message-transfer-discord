@@ -25,8 +25,27 @@ class Register(commands.Cog):
 
         if payload.message_id == cfg['whitelist_message_id']:
             if payload.emoji.id == cfg['emojis']['yes']['id']:
+                # check if user is banned
+                if cfg['banned_role'] in payload.member.roles: return
+
                 try:
                     await payload.member.add_roles(
+                        cfg['whitelisted_role'],
+                        cfg['general_role_spacer']
+                    )
+                except Exception as e:
+                    print(f'Error adding whitelist role to member: {e}')
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        """Remove whitelist if member unchecks accepting rules"""
+
+        member = await cfg['guild'].fetch_member(payload.user_id)
+
+        if payload.message_id == cfg['whitelist_message_id']:
+            if payload.emoji.id == cfg['emojis']['yes']['id']:
+                try:
+                    await member.remove_roles(
                         cfg['whitelisted_role'],
                         cfg['general_role_spacer']
                     )
