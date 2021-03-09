@@ -111,6 +111,9 @@ class Moderation(commands.Cog):
     async def ban(self, ctx: commands.Context, member: discord.Member):
         """Add Ban role to member"""
 
+        if db.is_d_banned(member):
+            return
+
         meta = {
             'title': 'Moderation Command Executed',
             'color': self.black
@@ -126,6 +129,9 @@ class Moderation(commands.Cog):
             f'You have been banned. If you wish, you may make a ban application '
             f'in the *new-applications* channel.'
         )
+
+        # update db
+        db.set_d_banned(member, True)
 
         await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
             meta=meta,

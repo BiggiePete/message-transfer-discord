@@ -76,7 +76,7 @@ class Loops(commands.Cog):
         # make formatted message
         message = ''
         for role, members in roles.items():
-            message += f'{role.mention}\n'
+            message += f'**{role.name}**\n'
             for m in members:
                 message += f'{m.name}#{m.discriminator}, '
             message = message[:-2]
