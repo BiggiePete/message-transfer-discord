@@ -9,7 +9,8 @@ class DB:
 
         self.fields = '''
             name, discriminator, discord_id, joined_guild, points,
-            lifetime_points, warn_level, lifetime_warns
+            lifetime_points, warn_level, lifetime_warns, is_d_banned,
+            lifetime_d_bans
         '''
 
     def init(self):
@@ -25,16 +26,10 @@ class DB:
                 points INTEGER NOT NULL,
                 lifetime_points INTEGER NOT NULL,
                 warn_level INTEGER NOT NULL,
-                lifetime_warns INTEGER NOT NULL
+                lifetime_warns INTEGER NOT NULL,
+                is_d_banned INTEGER NOT NULL,
+                lifetime_d_bans INTEGER NOT NULL
             );
-        ''')
-        self.connection.commit()
-
-    def delete_all(self, table: str):
-        """Drop all data in table"""
-
-        self.c.execute(f'''
-            DELETE FROM {table};
         ''')
         self.connection.commit()
 
@@ -42,16 +37,13 @@ class DB:
         """Create new entry in members table of member"""
 
         self.c.execute(f'''
-            INSERT INTO members ({self.fields}) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO members ({self.fields}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         ''', (
             member.name,
             member.discriminator,
             member.id,
             member.joined_at,
-            0,
-            0,
-            0,
-            0
+            0, 0, 0, 0, 0, 0
         ))
         self.connection.commit()
 
@@ -64,23 +56,6 @@ class DB:
 
         if not self.c.fetchone(): return False
         return True
-
-    def add_points(self, member: discord.Member, points: int):
-        """Add points to discord member"""
-
-        self.c.execute('''
-            UPDATE members SET points=points+?, lifetime_points=lifetime_points+?
-            WHERE discord_id=?;
-        ''', (points, points, member.id,))
-        self.connection.commit()
-
-    def reset_points(self, member: discord.Member):
-        """Reset points of discord member"""
-
-        self.c.execute('''
-            UPDATE members SET points=0 WHERE discord_id=?;
-        ''',  (member.id,))
-        self.connection.commit()
 
     def get_member(self, member: discord.Member) -> dict:
         """Return member from db referenced from discord.Member"""
@@ -103,6 +78,24 @@ class DB:
         }
 
         return member
+
+    def add_points(self, member: discord.Member, points: int):
+        """Add points to discord member"""
+
+        self.c.execute('''
+            UPDATE members SET points=points+?, lifetime_points=lifetime_points+?
+            WHERE discord_id=?;
+        ''', (points, points, member.id,))
+        self.connection.commit()
+
+    def reset_points(self, member: discord.Member):
+        """Reset points of discord member"""
+
+        self.c.execute('''
+            UPDATE members SET points=0 WHERE discord_id=?;
+        ''',  (member.id,))
+        self.connection.commit()
+
 
     def get_top_points(self) -> list:
         """Return a sorted list of the top 10 members sorted by points"""
@@ -130,4 +123,23 @@ class DB:
         self.c.execute('''
             UPDATE members SET warn_level=0 WHERE discord_id=?;
         ''', (member.id,))
+        self.connection.commit()
+
+    def is_d_banned(self, member: discord.Member) -> bool:
+        """Check if member is d_banned"""
+
+        self.c.execute('''
+            SELECT is_d_banned from members WHERE discord_id=?;
+        ''', (member.id,))
+
+        if self.c.fetchone()[0]: return True
+        return False
+
+    def set_d_banned(self, member: discord.Member, b: bool):
+        """Set member is_d_banned to True"""
+
+        self.c.execute('''
+            UPDATE members SET is_d_banned=?, lifetime_d_bans=lifetime_d_bans+?
+            WHERE discord_id=?;
+        ''', (1 if b else 0, 1 if b else 0, member.id,))
         self.connection.commit()
