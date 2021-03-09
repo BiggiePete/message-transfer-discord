@@ -111,6 +111,7 @@ class Applications(commands.Cog):
                         cfg['valid_app_types'][app_type]['role_spacer']
                     )
                     db.reset_warn(applicant)
+                    db.set_d_banned(applicant, False)
                 else:
                     await applicant.add_roles(
                         cfg['valid_app_types'][app_type]['role'],
