@@ -22,7 +22,7 @@ class Moderation(commands.Cog):
         ]
 
     @commands.command()
-    @commands.has_role(cfg['owner_role'].id)
+    @commands.has_role(cfg['administration_spacer'].id)
     async def purge(self, ctx: commands.Context, n: Optional[int]=1):
         """Purge chat messages"""
 

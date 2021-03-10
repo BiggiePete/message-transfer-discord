@@ -15,8 +15,8 @@ class Loops(commands.Cog):
         self.total_users = None
 
         # start tasks
-        self.get_status.start()
-        self.admin_roster.start()
+        # self.get_status.start()
+        # self.admin_roster.start()
 
     @tasks.loop(minutes=1)
     async def get_status(self):
