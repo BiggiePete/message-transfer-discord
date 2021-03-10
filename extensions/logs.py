@@ -29,8 +29,7 @@ class Logs(commands.Cog):
 
         if payload.cached_message:
             # ignore if message is from bot
-            if payload.cached_message.author == self.bot.user:
-                return
+            if payload.cached_message.author == self.bot.user: return
 
             message, attachment_url = await self.make_message(payload.cached_message)            
 
@@ -55,6 +54,37 @@ class Logs(commands.Cog):
         await self.check_embed_size(embed)
 
         await cfg['log_message_channel'].send(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_raw_bulk_message_delete(self, payload: discord.RawBulkMessageDeleteEvent):
+        """Log deleted messages when purge command is used to log channel"""
+
+        meta = {
+            'title': 'Deleted Message',
+            'color': self.red,
+            'm_name': 'Message'
+        }
+
+        if payload.cached_messages:
+            for message in payload.cached_messages:
+                # ignore if message is from bot
+                if message.author == self.bot.user: return
+
+                msg, attachment_url = await self.make_message(message)            
+
+                embed = await self.make_message_embed(
+                    meta=meta,
+                    author=message.author.mention,
+                    channel=message.channel.mention,
+                    _id=('Message ID', message.id),
+                    message=msg,
+                    attachment=attachment_url
+                )
+
+                # check if embed is too big to send
+                await self.check_embed_size(embed)
+
+                await cfg['log_message_channel'].send(embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_message_edit(self, payload: discord.RawMessageUpdateEvent):
