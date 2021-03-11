@@ -13,15 +13,20 @@ class Points(commands.Cog):
     async def on_message(self, message: discord.Message):
         """Add points to user for sending message in chat"""
 
+        await self.add_points(message.author)
+
+    async def add_points(self, member: discord.Member):
+        """Method for adding points to member in db"""
+
         # check if member exists in db
-        if not db.member_exists(message.author):
-            db.new_member(message.author)
+        if not db.member_exists(member):
+            db.new_member(member)
 
         # check if vip member
-        if cfg['vip_spacer'] in message.author.roles:
-            db.add_points(message.author, self.base_points * 1.2)
+        if cfg['vip_spacer'] in member.roles:
+            db.add_points(member, self.base_points * 1.2)
         else:
-            db.add_points(message.author, self.base_points)
+            db.add_points(member, self.base_points)
 
     @commands.command()
     async def points(self, ctx: commands.Context):
@@ -31,7 +36,9 @@ class Points(commands.Cog):
             return
 
         points = db.get_member(ctx.author)['points']
-        await ctx.send(f'{ctx.author.mention}, you have a total of {points} points.')
+        await ctx.send(
+            f'{ctx.author.mention}, you have a total of {round(points, 1)} points.'
+        )
 
     @points.error
     async def points_error(self, ctx: commands.Context, error: commands.CommandError):
