@@ -7,6 +7,7 @@ class Points(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.green = discord.Color.from_rgb(0, 255, 30)
+        self.base_points = 1
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -16,7 +17,11 @@ class Points(commands.Cog):
         if not db.member_exists(message.author):
             db.new_member(message.author)
 
-        db.add_points(message.author, 1)
+        # check if vip member
+        if cfg['vip_spacer'] in message.author.roles:
+            db.add_points(message.author, self.base_points * 1.2)
+        else:
+            db.add_points(message.author, self.base_points)
 
     @commands.command()
     async def points(self, ctx: commands.Context):
@@ -45,7 +50,7 @@ class Points(commands.Cog):
         top_member = self.bot.get_user(top_members[0][0])
 
         embed = discord.Embed(
-            title='Top Members',
+            title='Top Points',
             color=self.green,
             timestamp=datetime.datetime.utcnow()
         )
@@ -55,7 +60,7 @@ class Points(commands.Cog):
             m = self.bot.get_user(member[0])
             embed.add_field(
                 name=f'Position {i+1}',
-                value=f'**[{member[1]}]** {m.mention}',
+                value=f'**{round(member[1], 1)}** - {m.mention}',
                 inline=False
             )
 
