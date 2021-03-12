@@ -3,9 +3,8 @@ import asyncio
 import json
 from discord.ext import commands, tasks
 from cfg import cfg
-from extensions.points import Points
 
-class Loops(commands.Cog):
+class Status(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -18,7 +17,6 @@ class Loops(commands.Cog):
         # start tasks
         # self.get_status.start()
         # self.admin_roster.start()
-        self.voice_points.start()
 
     @tasks.loop(minutes=1)
     async def get_status(self):
@@ -100,13 +98,6 @@ class Loops(commands.Cog):
         except Exception as e:
             print('Error with request:', e)
 
-    @tasks.loop(minutes=1)
-    async def voice_points(self):
-        """Add points to users connected to voice channels"""
-
-        for channel in cfg['guild'].voice_channels:
-            for member in channel.members:
-                await Points.add_points(Points(self.bot), member)
 
 def setup(bot: commands.Bot):
-    bot.add_cog(Loops(bot))
+    bot.add_cog(Status(bot))
