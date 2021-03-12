@@ -33,7 +33,7 @@ def setup_cfg():
         'no_type_role': get(guild.roles, id=817519315539853362),
         'trouble_spacer': get(guild.roles, id=817519452409036800),
 
-        # Stats
+        # Status
         'status_urls': [
             'http://68.59.13.90:30120/players.json',
             'http://68.59.13.90:30120/smileyrp_queue/count'
@@ -41,6 +41,9 @@ def setup_cfg():
         'online_channel': bot.get_channel(817524069599674398),
         'player_count_channel': bot.get_channel(817524187676934177),
         'total_users_channel': bot.get_channel(817524228038328331),
+        'status_updates_role': get(guild.roles, id=820022834008031273),
+        'other_role_spacer': get(guild.roles, id=817519590074351636),
+        'status_updates_role_message_id': 820024753104093264,
 
         # Registration
         'whitelist_message_id': 818985319554744380,

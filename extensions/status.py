@@ -1,6 +1,7 @@
 import aiohttp
 import asyncio
 import json
+import discord
 from discord.ext import commands, tasks
 from cfg import cfg
 
@@ -17,6 +18,49 @@ class Status(commands.Cog):
         # start tasks
         # self.get_status.start()
         # self.admin_roster.start()
+
+    @commands.command()
+    @commands.has_role(cfg['owner_role'].id)
+    async def statusupdatemsg(self, ctx: commands.Context):
+        """Make message for users to recieve role for server status updates"""
+
+        await ctx.message.delete()
+        msg = await ctx.channel.send(
+            f'React with {cfg["emojis"]["yes"]["full"]} to be given the '
+            f'{cfg["status_updates_role"].mention} role, and receive updates '
+            'when the status of the game server changes.'
+        )
+        await msg.add_reaction(cfg['emojis']['yes']['full'])
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        """Add status updates role to those who enroll"""
+
+        if payload.message_id == cfg['status_updates_role_message_id']:
+            if payload.emoji.id == cfg['emojis']['yes']['id']:
+                try:
+                    await payload.member.add_roles(
+                        cfg['status_updates_role'],
+                        cfg['other_role_spacer']
+                    )
+                except Exception as e:
+                    print(f'Error adding whitelist role to member: {e}')
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        """Remove whitelist if member unchecks accepting rules"""
+
+        member = await cfg['guild'].fetch_member(payload.user_id)
+
+        if payload.message_id == cfg['status_updates_role_message_id']:
+            if payload.emoji.id == cfg['emojis']['yes']['id']:
+                try:
+                    await member.remove_roles(
+                        cfg['status_updates_role'],
+                        cfg['other_role_spacer']
+                    )
+                except Exception as e:
+                    print(f'Error adding whitelist role to member: {e}')
 
     @tasks.loop(minutes=1)
     async def get_status(self):
