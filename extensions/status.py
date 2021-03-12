@@ -1,8 +1,10 @@
 import aiohttp
 import asyncio
+import datetime
 import json
 import discord
 from discord.ext import commands, tasks
+from discord.utils import get
 from cfg import cfg
 
 class Status(commands.Cog):
@@ -21,7 +23,7 @@ class Status(commands.Cog):
 
     @commands.command()
     @commands.has_role(cfg['owner_role'].id)
-    async def statusupdatemsg(self, ctx: commands.Context):
+    async def getupdatesmsg(self, ctx: commands.Context):
         """Make message for users to recieve role for server status updates"""
 
         await ctx.message.delete()
@@ -36,7 +38,7 @@ class Status(commands.Cog):
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         """Add status updates role to those who enroll"""
 
-        if payload.message_id == cfg['status_updates_role_message_id']:
+        if payload.message_id == cfg['get_updates_role_message_id']:
             if payload.emoji.id == cfg['emojis']['yes']['id']:
                 try:
                     await payload.member.add_roles(
@@ -52,7 +54,7 @@ class Status(commands.Cog):
 
         member = await cfg['guild'].fetch_member(payload.user_id)
 
-        if payload.message_id == cfg['status_updates_role_message_id']:
+        if payload.message_id == cfg['get_updates_role_message_id']:
             if payload.emoji.id == cfg['emojis']['yes']['id']:
                 try:
                     await member.remove_roles(
@@ -66,11 +68,17 @@ class Status(commands.Cog):
     async def get_status(self):
         """Update status channel names"""
 
-        print('scan')
-
         async with aiohttp.ClientSession() as session:
             coroutines = [self.request(session, url) for url in cfg['status_urls']]
             players, info = await asyncio.gather(*coroutines)
+
+            # update player list
+            if players:
+                player_list = await self.make_player_list(players)
+                await cfg['player_list_channel'].send(
+                    f'```{player_list}```',
+                    delete_after=5*60
+                )
 
             if players is None or info is None:
                 status = 0
@@ -114,6 +122,47 @@ class Status(commands.Cog):
             self.queue_count = queue_count
             self.total_users = cfg['guild'].member_count
 
+    @staticmethod
+    async def make_player_list(players: list) -> str:
+        """Return a formatted string of the game server playerlist info"""
+
+        time = datetime.datetime.utcnow() - datetime.timedelta(hours=5)
+        pl = f'{time.strftime("%B %d, %Y - %-I:%M%p")}\n'
+        pl += 'GameID'.ljust(8)
+        pl += 'Discord User'.ljust(25)
+        pl += 'SteamID'.ljust(17)
+        pl += 'Name'.ljust(25)
+        pl += 'Ping\n'
+
+        for player in players:
+            game_id = str(player['id'])
+
+            for _id in player['identifiers']:
+                if 'discord' in _id:
+                    discord_user = get(cfg['guild'].members, id=int(_id.split(':')[-1]))
+                if 'steam' in _id: steam_id = _id.split(':')[-1]
+
+            pl += f'{game_id}'.ljust(8)
+            pl += f'{discord_user.name}#{discord_user.discriminator}'.ljust(25) if discord_user else 'kekw#1'.ljust(25)
+            pl += f'{steam_id}'.ljust(17)
+            pl += f'{player["name"]}'.ljust(25)
+            pl += f'{player["ping"]}\n'
+
+        return pl
+
+    @staticmethod
+    async def request(session: aiohttp.ClientSession, url: str):
+        """Preform asynchronous http request"""
+
+        try:
+            async with session.get(url, timeout=2) as response:
+                data = await response.read()
+                return json.loads(data.decode())
+        except asyncio.TimeoutError: # server offline
+            pass
+        except Exception as e:
+            print('Error with request:', e)
+
     @tasks.loop(minutes=5)
     async def admin_roster(self):
         """Update admin roster on loop based off discord status"""
@@ -139,19 +188,6 @@ class Status(commands.Cog):
 
         await cfg['admin_roster_channel'].purge()
         await cfg['admin_roster_channel'].send(message)
-
-    @staticmethod
-    async def request(session: aiohttp.ClientSession, url: str):
-        """Preform asynchronous http request"""
-
-        try:
-            async with session.get(url, timeout=2) as response:
-                data = await response.read()
-                return json.loads(data.decode())
-        except asyncio.TimeoutError: # server offline
-            pass
-        except Exception as e:
-            print('Error with request:', e)
 
 
 def setup(bot: commands.Bot):

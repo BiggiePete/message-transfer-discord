@@ -45,7 +45,7 @@ def setup_cfg():
         'player_list_channel': bot.get_channel(820035731962855495),
         'status_updates_role': get(guild.roles, id=820022834008031273),
         'other_role_spacer': get(guild.roles, id=817519590074351636),
-        'status_updates_role_message_id': 820024753104093264,
+        'get_updates_role_message_id': 820024753104093264,
 
         # Registration
         'whitelist_message_id': 818985319554744380,
