@@ -1,6 +1,6 @@
 import datetime
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from cfg import db, cfg
 
 class Points(commands.Cog):
@@ -9,11 +9,22 @@ class Points(commands.Cog):
         self.green = discord.Color.from_rgb(0, 255, 30)
         self.base_points = 1
 
+        # start tasks
+        self.voice_points.start()
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         """Add points to user for sending message in chat"""
 
         await self.add_points(message.author)
+
+    @tasks.loop(minutes=1)
+    async def voice_points(self):
+        """Add points to users connected to voice channels"""
+
+        for channel in cfg['guild'].voice_channels:
+            for member in channel.members:
+                await self.add_points(member)
 
     async def add_points(self, member: discord.Member):
         """Method for adding points to member in db"""
