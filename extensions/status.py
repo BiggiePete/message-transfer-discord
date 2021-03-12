@@ -16,8 +16,8 @@ class Status(commands.Cog):
         self.total_users = None
 
         # start tasks
-        # self.get_status.start()
-        # self.admin_roster.start()
+        self.get_status.start()
+        self.admin_roster.start()
 
     @commands.command()
     @commands.has_role(cfg['owner_role'].id)
@@ -62,33 +62,44 @@ class Status(commands.Cog):
                 except Exception as e:
                     print(f'Error adding whitelist role to member: {e}')
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=5)
     async def get_status(self):
         """Update status channel names"""
 
+        print('scan')
+
         async with aiohttp.ClientSession() as session:
             coroutines = [self.request(session, url) for url in cfg['status_urls']]
-            players, queue = await asyncio.gather(*coroutines)
+            players, info = await asyncio.gather(*coroutines)
 
-            if players is None or queue is None:
+            if players is None or info is None:
                 status = 0
                 player_count = 0
                 queue_count = 0
             else:
                 status = 1
                 player_count = len(players)
-                queue_count = queue['count']
+                queue_count = info['vars']['Queue']
 
-            # check server dead or alive
+            # check server state changed
             if self.status != status:
-                await cfg['online_channel'].edit(name =
-                    f"rp.smileyrp.com: {'Online' if status else 'Offline'}"
+                # update channel name
+                await cfg['online_channel'].edit(
+                    name=f"rp.smileyrp.com: {'Online' if status else 'Offline'}"
+                )
+
+                # send update to status update role
+                await cfg['announcement_channel'].send(
+                    f'{cfg["status_updates_role"].mention}, the status of the server has '
+                    f'change from **{"Online" if self.status else "Offline"}** '
+                    f'to **{"Online" if status else "Offline"}**. Next scan '
+                    'will be in *5 minutes*.'
                 )
 
             # check server player/queue count
             if self.player_count != player_count or self.queue_count != queue_count:
-                await cfg['player_count_channel'].edit(name =
-                    f"Online Players: {player_count}+{queue_count}/64"
+                await cfg['player_count_channel'].edit(
+                    name=f"Online Players: {player_count}+{queue_count}/64"
                 )
 
             # check change in discord member count
@@ -137,8 +148,8 @@ class Status(commands.Cog):
             async with session.get(url, timeout=2) as response:
                 data = await response.read()
                 return json.loads(data.decode())
-        except asyncio.TimeoutError:
-            print('Server offline')
+        except asyncio.TimeoutError: # server offline
+            pass
         except Exception as e:
             print('Error with request:', e)
 

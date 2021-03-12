@@ -35,12 +35,14 @@ def setup_cfg():
 
         # Status
         'status_urls': [
-            'http://68.59.13.90:30120/players.json',
-            'http://68.59.13.90:30120/smileyrp_queue/count'
+            'http://68.60.41.183:30120/players.json',
+            'http://68.60.41.183:30120/info.json'
         ],
+        'announcement_channel': bot.get_channel(817524671083053056),
         'online_channel': bot.get_channel(817524069599674398),
         'player_count_channel': bot.get_channel(817524187676934177),
         'total_users_channel': bot.get_channel(817524228038328331),
+        'player_list_channel': bot.get_channel(820035731962855495),
         'status_updates_role': get(guild.roles, id=820022834008031273),
         'other_role_spacer': get(guild.roles, id=817519590074351636),
         'status_updates_role_message_id': 820024753104093264,
