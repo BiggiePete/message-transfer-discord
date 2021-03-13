@@ -73,6 +73,7 @@ class Status(commands.Cog):
 
             # update player list
             if players:
+                await cfg['player_list_channel'].purge()
                 player_list = await self.make_player_list(players)
                 msg = await cfg['player_list_channel'].send(
                     cfg['emojis']['kekw']['full'],
@@ -127,7 +128,7 @@ class Status(commands.Cog):
     async def make_player_list(players: list) -> str:
         """Return a formatted string of the game server playerlist info"""
 
-        pl = ''
+        pl = '**Online Player List:**\n'
         pl += '**GameID** '.ljust(15)
         pl += '**Discord User** '.ljust(50)
         pl += '**SteamID** '.ljust(31)
@@ -143,8 +144,8 @@ class Status(commands.Cog):
                 if 'steam' in _id: steam_id = _id.split(':')[-1]
 
             pl += f'{game_id}'.ljust(20)
-            pl += f'{discord_user.mention}'.ljust(51) if discord_user else 'kekw#1'.ljust(51)
-            pl += f'{steam_id}'.ljust(19)
+            pl += f'{discord_user.mention}'.ljust(62) if discord_user else '@kekw'.ljust(62)
+            pl += f'{steam_id}'.ljust(18)
             pl += f'{player["name"]}'.ljust(47)
             pl += f'{player["ping"]}\n'
 
