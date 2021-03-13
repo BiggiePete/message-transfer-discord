@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from discord.utils import get
 from cfg import cfg, db
+from extensions.moderation import Moderation
 
 
 class Applications(commands.Cog):
@@ -51,7 +52,7 @@ class Applications(commands.Cog):
         created_at = created_at.strftime("%B %d, %Y - %-I:%M%p")
         app_review_text = (
             f'**User:** {ctx.author.mention}\n'
-            f'**Submitted at:** {created_at}\n'
+            f'**Submitted At:** {created_at}\n'
             f'**Application:** {ctx.message.content[4:]}'
         )
 
