@@ -1,6 +1,5 @@
 import aiohttp
 import asyncio
-import datetime
 import json
 import discord
 from discord.ext import commands, tasks
@@ -75,10 +74,12 @@ class Status(commands.Cog):
             # update player list
             if players:
                 player_list = await self.make_player_list(players)
-                await cfg['player_list_channel'].send(
-                    f'```{player_list}```',
+                msg = await cfg['player_list_channel'].send(
+                    cfg['emojis']['kekw']['full'],
                     delete_after=5*60
                 )
+
+                await msg.edit(content=player_list)
 
             if players is None or info is None:
                 status = 0
@@ -126,13 +127,12 @@ class Status(commands.Cog):
     async def make_player_list(players: list) -> str:
         """Return a formatted string of the game server playerlist info"""
 
-        time = datetime.datetime.utcnow() - datetime.timedelta(hours=5)
-        pl = f'{time.strftime("%B %d, %Y - %-I:%M%p")}\n'
-        pl += 'GameID'.ljust(8)
-        pl += 'Discord User'.ljust(25)
-        pl += 'SteamID'.ljust(17)
-        pl += 'Name'.ljust(25)
-        pl += 'Ping\n'
+        pl = ''
+        pl += '**GameID** '.ljust(15)
+        pl += '**Discord User** '.ljust(50)
+        pl += '**SteamID** '.ljust(31)
+        pl += '**Name** '.ljust(50)
+        pl += '**Ping**\n'
 
         for player in players:
             game_id = str(player['id'])
@@ -142,10 +142,10 @@ class Status(commands.Cog):
                     discord_user = get(cfg['guild'].members, id=int(_id.split(':')[-1]))
                 if 'steam' in _id: steam_id = _id.split(':')[-1]
 
-            pl += f'{game_id}'.ljust(8)
-            pl += f'{discord_user.name}#{discord_user.discriminator}'.ljust(25) if discord_user else 'kekw#1'.ljust(25)
-            pl += f'{steam_id}'.ljust(17)
-            pl += f'{player["name"]}'.ljust(25)
+            pl += f'{game_id}'.ljust(20)
+            pl += f'{discord_user.mention}'.ljust(51) if discord_user else 'kekw#1'.ljust(51)
+            pl += f'{steam_id}'.ljust(19)
+            pl += f'{player["name"]}'.ljust(47)
             pl += f'{player["ping"]}\n'
 
         return pl
@@ -182,12 +182,13 @@ class Status(commands.Cog):
         for role, members in roles.items():
             message += f'**{role.name}**\n'
             for m in members:
-                message += f'{m.name}#{m.discriminator}, '
+                message += f'{m.mention}, '
             message = message[:-2]
             message += '\n\n'
 
         await cfg['admin_roster_channel'].purge()
-        await cfg['admin_roster_channel'].send(message)
+        msg = await cfg['admin_roster_channel'].send(cfg['emojis']['kekw']['full'])
+        await msg.edit(content=message)
 
 
 def setup(bot: commands.Bot):
