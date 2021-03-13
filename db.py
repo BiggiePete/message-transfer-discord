@@ -65,8 +65,9 @@ class DB:
         ''', (member.id,))
 
         member = self.c.fetchone()
+        if not member: return
+
         member = {
-            'id': member[0],
             'name': member[0],
             'discriminator': member[1],
             'discord_id': member[2],
@@ -74,7 +75,9 @@ class DB:
             'points': member[4],
             'lifetime_points': member[5],
             'warn_level': member[6],
-            'lifetime_warn': member[7]
+            'lifetime_warns': member[7],
+            'is_d_banned': member[8],
+            'lifetime_d_bans': member[9],
         }
 
         return member

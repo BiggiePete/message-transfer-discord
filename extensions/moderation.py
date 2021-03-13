@@ -249,6 +249,46 @@ class Moderation(commands.Cog):
 
         await ctx.send(f'Error executing resetwarn:\n`{error}`', delete_after=10)
 
+    @commands.command()
+    async def lookup(self, ctx: commands.Context, member: discord.Member):
+        """Lookup attributes of a member"""
+
+        meta = {
+            'title': 'Moderation Command Executed',
+            'color': self.green
+        }
+
+        await ctx.send(await self.make_lookup_msg(member))
+
+        await cfg['moderation_channel'].send(embed=await self.make_moderation_embed(
+            meta=meta,
+            admin=ctx.author,
+            command=ctx.message.clean_content,
+            target=member
+        ))
+        await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
+
+    @lookup.error
+    async def lookup_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with lookup"""
+
+        await ctx.send(f'Error executing lookup:\n`{error}`', delete_after=10)
+
+    @staticmethod
+    async def make_lookup_msg(member: discord.Member) -> str:
+        """Return message for lookup"""
+
+        # get member attributes
+        db_member = db.get_member(member)
+        if not db_member:
+            return 'Member not found in db.'
+
+        m = ''
+        for k, v in db_member.items():
+            m += f'**{k}:** {v}\n'
+
+        return m
+
     @staticmethod
     async def make_moderation_embed(
         meta: dict,
