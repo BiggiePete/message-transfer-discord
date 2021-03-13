@@ -16,6 +16,8 @@ class Points(commands.Cog):
     async def on_message(self, message: discord.Message):
         """Add points to user for sending message in chat"""
 
+        if message.author == self.bot.user: return
+
         await self.add_points(message.author)
 
     @tasks.loop(minutes=1)
