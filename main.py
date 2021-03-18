@@ -23,17 +23,6 @@ async def help(ctx: commands.Context):
     """Help command"""
 
     await ctx.send('ParadiseRP Help\n'
-        '**Events:**\n'
-        '   Message edit and delete logs.\n'
-        '   Member join or leave(self, kick, ban) logs.\n'
-        '   Member role add or remove logs.\n'
-        '   Points awarded for sending messages.\n'
-        '   Points awarded for being in a voice channel.\n'
-        '   Accept rules to be whitelisted.\n'
-        '   React to get server state changes.\n'
-        '   Get server status every 5 minutes.\n'
-        '   Get online player list every 5 minutes.\n'
-        '   Get admin roster every 5 minutes.\n'
         '**Commands:**\n'
         '   **Anyone:**\n'
         '      **help** - Display this message.\n'

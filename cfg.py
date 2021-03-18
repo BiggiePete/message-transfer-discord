@@ -35,8 +35,8 @@ def setup_cfg():
 
         # Status
         'status_urls': [
-            'http://192.53.165.123:30120/players.json',
-            'http://192.53.165.123:30120/info.json'
+            'http://68.60.41.183:30120/players.json',
+            'http://68.60.41.183:30120/info.json'
         ],
         'announcement_channel': bot.get_channel(817524671083053056),
         'online_channel': bot.get_channel(817524069599674398),
