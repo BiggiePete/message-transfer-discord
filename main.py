@@ -22,7 +22,7 @@ async def on_ready():
 async def help(ctx: commands.Context):
     """Help command"""
 
-    await ctx.send('ParadiseRP Help\n'
+    await ctx.send('ParadiseRP Help Menu\n'
         '**Commands:**\n'
         '   **Anyone:**\n'
         '      **help** - Display this message.\n'
