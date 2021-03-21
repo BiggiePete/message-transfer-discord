@@ -21,6 +21,13 @@ class Moderation(commands.Cog):
             # 812408184719147009  # Discord Logs
         ]
 
+    @staticmethod
+    async def check_hierarchy(admin: discord.Member, target: discord.Member):
+        """Check admin hierarchy with moderation commands"""
+
+        if admin.top_role < target.top_role:
+            raise commands.CommandError('Target is of same or higher role than admin')
+
     @commands.command()
     @commands.has_role(cfg['administration_spacer'].id)
     async def purge(self, ctx: commands.Context, n: Optional[int]=1):
@@ -55,6 +62,8 @@ class Moderation(commands.Cog):
         messages
         """
 
+        await self.check_hierarchy(ctx.author, member)
+
         meta = {
             'title': 'Moderation Command Executed',
             'color': self.orange
@@ -83,6 +92,8 @@ class Moderation(commands.Cog):
     async def oktype(self, ctx: commands.Context, member: discord.Member):
         """Removes member No Type role to allow member to send text  messages"""
 
+        await self.check_hierarchy(ctx.author, member)
+
         meta = {
             'title': 'Moderation Command Executed',
             'color': self.green
@@ -110,6 +121,8 @@ class Moderation(commands.Cog):
     @commands.has_role(cfg['administration_spacer'].id)
     async def ban(self, ctx: commands.Context, member: discord.Member):
         """Add Ban role to member"""
+
+        await self.check_hierarchy(ctx.author, member)
 
         if db.is_d_banned(member):
             return
@@ -184,6 +197,8 @@ class Moderation(commands.Cog):
     async def warn(self, ctx: commands.Context, member: discord.Member, *message: str):
         """Send warn to member"""
 
+        await self.check_hierarchy(ctx.author, member)
+
         meta = {
             'title': 'Moderation Command Executed',
             'color': self.orange
@@ -224,6 +239,8 @@ class Moderation(commands.Cog):
     @commands.has_role(cfg['administration_spacer'].id)
     async def resetwarn(self, ctx: commands.Context, member: discord.Member):
         """Reset warning level of member"""
+
+        await self.check_hierarchy(ctx.author, member)
 
         meta = {
             'title': 'Moderation Command Executed',
