@@ -1,1 +1,1 @@
-# smileyrp-discordbot
+# ParadiseRP Discord Bot
