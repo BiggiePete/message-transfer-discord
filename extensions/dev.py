@@ -1,5 +1,5 @@
 from discord.ext import commands
-from cfg import cfg, db
+from cfg import cfg
 
 
 class Dev(commands.Cog):
@@ -7,7 +7,7 @@ class Dev(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.has_role(cfg['owner_role'].id)
+    # @commands.has_role(cfg['owner_role'].id)
     async def loadext(self, ctx: commands.Context, extension: str):
         """Load an extension"""
 
@@ -27,7 +27,7 @@ class Dev(commands.Cog):
         await ctx.send(f'Error executing loadext:\n`{error}`', delete_after=10)
 
     @commands.command()
-    @commands.has_role(cfg['owner_role'].id)
+    # @commands.has_role(cfg['owner_role'].id)
     async def unloadext(self, ctx: commands.Context, extension: str):
         """Unload an extension"""
 
@@ -47,7 +47,7 @@ class Dev(commands.Cog):
         await ctx.send(f'Error executing unloadext:\n`{error}`', delete_after=10)
 
     @commands.command()
-    @commands.has_role(cfg['owner_role'].id)
+    # @commands.has_role(cfg['owner_role'].id)
     async def reloadext(self, ctx: commands.Context, extension: str):
         """Reload an extension"""
 
