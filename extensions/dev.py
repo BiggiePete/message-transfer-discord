@@ -1,3 +1,4 @@
+from typing import Optional
 from discord.ext import commands
 from cfg import cfg
 
@@ -13,7 +14,6 @@ class Dev(commands.Cog):
 
         try:
             self.bot.load_extension(f'extensions.{extension}')
-            await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
         except Exception as e:
             await ctx.send(f'Error loading extension:\n`{e}`', delete_after=10)
 
@@ -21,8 +21,7 @@ class Dev(commands.Cog):
     async def loadext_error(self, ctx: commands.Context, error: commands.CommandError):
         """Function executed when there was an error associated with loadext"""
 
-        if isinstance(error, commands.CheckFailure):
-            return
+        if isinstance(error, commands.CheckFailure): return
 
         await ctx.send(f'Error executing loadext:\n`{error}`', delete_after=10)
 
@@ -33,7 +32,6 @@ class Dev(commands.Cog):
 
         try:
             self.bot.unload_extension(f'extensions.{extension}')
-            await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
         except Exception as e:
             await ctx.send(f'Error unloadeding extension:\n`{e}`', delete_after=10)
 
@@ -41,8 +39,7 @@ class Dev(commands.Cog):
     async def unloadext_error(self, ctx: commands.Context, error: commands.CommandError):
         """Function executed when there was an error associated with unloadext"""
 
-        if isinstance(error, commands.CheckFailure):
-            return
+        if isinstance(error, commands.CheckFailure): return
 
         await ctx.send(f'Error executing unloadext:\n`{error}`', delete_after=10)
 
@@ -53,7 +50,6 @@ class Dev(commands.Cog):
 
         try:
             self.bot.reload_extension(f'extensions.{extension}')
-            await ctx.message.add_reaction(cfg['emojis']['pepeok']['full'])
         except Exception as e:
             await ctx.send(f'Error reloading extension:\n`{e}`', delete_after=10)
 
@@ -61,10 +57,21 @@ class Dev(commands.Cog):
     async def reloadext_error(self, ctx: commands.Context, error: commands.CommandError):
         """Function executed when there was an error associated with reloadext"""
 
-        if isinstance(error, commands.CheckFailure):
-            return
+        if isinstance(error, commands.CheckFailure): return
 
         await ctx.send(f'Error executing reloadext:\n`{error}`', delete_after=10)
+    
+    @commands.command()
+    async def purge(self, ctx: commands.Context, n: Optional[int]=1):
+        """Purge chat messages"""
+
+        await ctx.channel.purge(limit = n+1)
+
+    @purge.error
+    async def purge_error(self, ctx: commands.Context, error: commands.CommandError):
+        """Function executed when there was an error associated with purge"""
+
+        await ctx.send(f'Error executing purge:\n`{error}`', delete_after=10)
 
 
 def setup(bot: commands.Bot):
