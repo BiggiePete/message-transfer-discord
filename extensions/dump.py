@@ -31,10 +31,11 @@ class Dump(commands.Cog):
         with open(f'{filename}.csv') as csvfile:
             reader = csv.reader(csvfile, delimiter='\t')
             next(reader) # skip header
-            for row in reader:
+            for row in enumerate(reader):
                 message, _, pinned = row
-                m = await ctx.send(message)
-                # if pinned: await m.pin()
+                if message:
+                    m = await ctx.send(message)
+                    if pinned == 'True': await m.pin()
 
         await ctx.reply('done')
 
