@@ -1,20 +1,25 @@
 import csv
+import json
 from discord.ext import commands
 
 class Dump(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.delimiter = '\t'
 
     @commands.command()
     async def dump_to(self, ctx: commands.Context, filename: str):
         """Dump message history to csv file"""
 
-        with open(f'{filename}.csv', 'w') as f:
-            f.write(f'content{self.delimiter}created_at{self.delimiter}pinned\n')
+        data = []
+        with open(f'{filename}.json', 'w') as f:
             async for message in ctx.channel.history(limit=None, oldest_first=True):
                 if message.author == self.bot.user: continue
-                f.write(f'{message.content}{self.delimiter}{message.created_at}{self.delimiter}{message.pinned}\n')
+                data.append({
+                    'content': message.content,
+                    'attachments': [x.proxy_url for x in message.attachments]
+                })
+            data.pop()
+            f.write(json.dumps(data))
 
         await ctx.reply('done')
 
