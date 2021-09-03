@@ -1,6 +1,9 @@
-import csv
+import aiohttp
+import io
 import json
+import discord
 from discord.ext import commands
+
 
 class Dump(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -16,7 +19,8 @@ class Dump(commands.Cog):
                 if message.author == self.bot.user: continue
                 data.append({
                     'content': message.content,
-                    'attachments': [x.proxy_url for x in message.attachments]
+                    'attachments': [x.proxy_url for x in message.attachments],
+                    'pinned': message.pinned
                 })
             data.pop()
             f.write(json.dumps(data))
@@ -33,14 +37,19 @@ class Dump(commands.Cog):
     async def dump_from(self, ctx: commands.Context, filename: str):
         """Dump csv file to discord channel"""
 
-        with open(f'{filename}.csv') as csvfile:
-            reader = csv.reader(csvfile, delimiter='\t')
-            next(reader) # skip header
-            for row in enumerate(reader):
-                message, _, pinned = row
-                if message:
-                    m = await ctx.send(message)
-                    if pinned == 'True': await m.pin()
+        with open(f'{filename}.json') as f: data = json.loads(f.read())
+        for item in data:
+            if not len(item['content']) and not item['attachments']: continue
+
+            attachments = []
+            for a in item['attachments']:
+                attachments.append(await self.get_attachment_data(a))
+
+            m = await ctx.send(
+                content=item['content'],
+                files=[discord.File(a, filename='img.jpg') for a in attachments]
+            )
+            if item['pinned']: await m.pin()
 
         await ctx.reply('done')
 
@@ -49,6 +58,14 @@ class Dump(commands.Cog):
         """Function executed when there was an error associated with dump_from"""
 
         await ctx.send(f'Error executing dump_from:\n`{error}`', delete_after=10)
+
+    async def get_attachment_data(self, url: str) -> io.BytesIO:
+        """Create byte objects for uploading attachments"""
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200: return None
+                return io.BytesIO(await resp.read())
 
 
 def setup(bot: commands.Bot):
