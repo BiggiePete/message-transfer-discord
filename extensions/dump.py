@@ -43,8 +43,6 @@ class Dump(commands.Cog):
             if not len(item['content']) and not item['attachments']: continue
 
             attachments = await self.get_attachment_data(item['attachments'])
-            print(attachments, len(attachments))
-
             m = await ctx.send(
                 content=item['content'],
                 files=[discord.File(a, filename=f'{i}.{item["attachments"][i].split(".")[-1]}') for i, a in enumerate(attachments)]
