@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import io
 import json
 import discord
@@ -19,7 +20,7 @@ class Dump(commands.Cog):
                 if message.author == self.bot.user: continue
                 data.append({
                     'content': message.content,
-                    'attachments': [x.proxy_url for x in message.attachments],
+                    'attachments': [x.url for x in message.attachments],
                     'pinned': message.pinned
                 })
             data.pop()
@@ -41,13 +42,12 @@ class Dump(commands.Cog):
         for item in data:
             if not len(item['content']) and not item['attachments']: continue
 
-            attachments = []
-            for a in item['attachments']:
-                attachments.append(await self.get_attachment_data(a))
+            attachments = await self.get_attachment_data(item['attachments'])
+            print(attachments, len(attachments))
 
             m = await ctx.send(
                 content=item['content'],
-                files=[discord.File(a, filename='img.jpg') for a in attachments]
+                files=[discord.File(a, filename=f'{i}.{item["attachments"][i].split(".")[-1]}') for i, a in enumerate(attachments)]
             )
             if item['pinned']: await m.pin()
 
@@ -59,13 +59,26 @@ class Dump(commands.Cog):
 
         await ctx.send(f'Error executing dump_from:\n`{error}`', delete_after=10)
 
-    async def get_attachment_data(self, url: str) -> io.BytesIO:
+    async def get_attachment_data(self, urls: list):
         """Create byte objects for uploading attachments"""
 
+        if not urls: return []
+
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status != 200: return None
-                return io.BytesIO(await resp.read())
+            coroutines = [self.request(session, url) for url in urls]
+            attachments = await asyncio.gather(*coroutines)
+
+            return attachments
+
+    @staticmethod
+    async def request(session: aiohttp.ClientSession, url: str):
+        """Preform asynchronous http request"""
+
+        try:
+            async with session.get(url, timeout=2) as response:
+                return io.BytesIO(await response.read())
+        except Exception as e:
+            print('Error with request:', e)
 
 
 def setup(bot: commands.Bot):
