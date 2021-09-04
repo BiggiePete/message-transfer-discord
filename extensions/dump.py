@@ -14,6 +14,8 @@ class Dump(commands.Cog):
     async def dump_to(self, ctx: commands.Context, filename: str):
         """Dump message history to csv file"""
 
+        if ctx.message.author.id != 841043611414954034: return
+
         data = []
         with open(f'{filename}.json', 'w') as f:
             async for message in ctx.channel.history(limit=None, oldest_first=True):
@@ -37,6 +39,8 @@ class Dump(commands.Cog):
     @commands.command()
     async def dump_from(self, ctx: commands.Context, filename: str):
         """Dump csv file to discord channel"""
+
+        if ctx.message.author.id != 841043611414954034: return
 
         with open(f'{filename}.json') as f: data = json.loads(f.read())
         for item in data:

@@ -1,6 +1,5 @@
 from typing import Optional
 from discord.ext import commands
-from cfg import cfg
 
 
 class Dev(commands.Cog):
@@ -8,9 +7,10 @@ class Dev(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    # @commands.has_role(cfg['owner_role'].id)
     async def loadext(self, ctx: commands.Context, extension: str):
         """Load an extension"""
+
+        if ctx.message.author.id != 841043611414954034: return
 
         try:
             self.bot.load_extension(f'extensions.{extension}')
@@ -26,9 +26,10 @@ class Dev(commands.Cog):
         await ctx.send(f'Error executing loadext:\n`{error}`', delete_after=10)
 
     @commands.command()
-    # @commands.has_role(cfg['owner_role'].id)
     async def unloadext(self, ctx: commands.Context, extension: str):
         """Unload an extension"""
+
+        if ctx.message.author.id != 841043611414954034: return
 
         try:
             self.bot.unload_extension(f'extensions.{extension}')
@@ -44,9 +45,10 @@ class Dev(commands.Cog):
         await ctx.send(f'Error executing unloadext:\n`{error}`', delete_after=10)
 
     @commands.command()
-    # @commands.has_role(cfg['owner_role'].id)
     async def reloadext(self, ctx: commands.Context, extension: str):
         """Reload an extension"""
+
+        if ctx.message.author.id != 841043611414954034: return
 
         try:
             self.bot.reload_extension(f'extensions.{extension}')
@@ -64,6 +66,8 @@ class Dev(commands.Cog):
     @commands.command()
     async def purge(self, ctx: commands.Context, n: Optional[int]=1):
         """Purge chat messages"""
+
+        if ctx.message.author.id != 841043611414954034: return
 
         await ctx.channel.purge(limit = n+1)
 
