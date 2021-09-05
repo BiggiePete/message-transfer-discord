@@ -21,6 +21,7 @@ class Dump(commands.Cog):
             async for message in ctx.channel.history(limit=None, oldest_first=True):
                 if message.author == self.bot.user: continue
                 data.append({
+                    'from': message.author.display_name,
                     'content': message.content,
                     'attachments': [x.url for x in message.attachments],
                     'pinned': message.pinned
@@ -48,7 +49,7 @@ class Dump(commands.Cog):
 
             attachments = await self.get_attachment_data(item['attachments'])
             m = await ctx.send(
-                content=item['content'],
+                content=f'**{item["from"]}**: {item["content"]}',
                 files=[discord.File(a, filename=f'{i}.{item["attachments"][i].split(".")[-1]}') for i, a in enumerate(attachments)]
             )
             if item['pinned']: await m.pin()
