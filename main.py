@@ -18,4 +18,4 @@ async def on_ready():
 
 
 if __name__ == '__main__':
-    bot.run('ODgyNjI5ODU4OTg1OTE0NDQ5.YS-LHA.LB6NhWY39TGVn6ZTl9f80O6sxTU')
+    bot.run('Your Token')
